@@ -5,8 +5,8 @@
   "description": "Video project built with Remotion",
   "scripts": {
     "dev": "remotion studio",
-    "build": "remotion render EP-2026-10-03-gold out/EP-2026-10-03-gold.mp4",
-    "still": "remotion still EP-2026-10-03-gold out/still.png --frame=150"
+    "build": "remotion render EP-2026-10-08-gasoline out/EP-2026-10-08-gasoline.mp4",
+    "still": "remotion still EP-2026-10-08-gasoline out/still.png --frame=500"
   },
   "dependencies": {
     "@fontsource/be-vietnam-pro": "^5.3.0",

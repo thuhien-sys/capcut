@@ -1,14 +1,29 @@
 import React from "react";
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, useCurrentFrame } from "remotion";
 import { FONT_DISPLAY } from "../fonts";
 import { COLORS, LAYOUT } from "../theme";
 import { fadeUp, progress } from "./anim";
 import { NewsBackground } from "./NewsBackground";
-import { StatCard } from "./StatCard";
-import { Episode } from "./types";
+import { ScreenVisualView } from "./ScreenVisual";
+import { Episode, Scene } from "./types";
 
-const INTRO_END = 70;
-const TICKER_HEIGHT = 64;
+export const TICKER_HEIGHT = 64;
+export const OPENER_FRAMES = { breaking: 70, wipe: 16 } as const;
+
+const ScreenArea: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div
+    style={{
+      position: "absolute",
+      top: LAYOUT.screenTop,
+      left: 0,
+      width: "100%",
+      height: LAYOUT.screenHeight,
+      overflow: "hidden",
+    }}
+  >
+    {children}
+  </div>
+);
 
 const TopBar: React.FC<{ category: string; date: string }> = ({ category, date }) => {
   const frame = useCurrentFrame();
@@ -17,7 +32,6 @@ const TopBar: React.FC<{ category: string; date: string }> = ({ category, date }
   return (
     <div
       style={{
-        ...fadeUp(frame, 4, 14, -20),
         position: "absolute",
         top: 26,
         left: 40,
@@ -36,7 +50,15 @@ const TopBar: React.FC<{ category: string; date: string }> = ({ category, date }
         <div style={{ width: 14, height: 14, borderRadius: 7, background: COLORS.white, opacity: blink }} />
         LIVE
       </div>
-      <div style={{ padding: "6px 16px", background: "rgba(8,22,39,0.75)", border: "1px solid rgba(255,255,255,0.3)" }}>
+      <div
+        key={category}
+        style={{
+          ...fadeUp(frame, 0, 12, -16),
+          padding: "6px 16px",
+          background: "rgba(8,22,39,0.75)",
+          border: "1px solid rgba(255,255,255,0.3)",
+        }}
+      >
         {category}
       </div>
       <div style={{ flex: 1 }} />
@@ -45,13 +67,14 @@ const TopBar: React.FC<{ category: string; date: string }> = ({ category, date }
   );
 };
 
-const BreakingIntro: React.FC<{ headline: string }> = ({ headline }) => {
+const BreakingOpener: React.FC<{ headline: string }> = ({ headline }) => {
   const frame = useCurrentFrame();
+  const end = OPENER_FRAMES.breaking;
   const wipe = progress(frame, 0, 14);
   const text = progress(frame, 8, 14);
-  const exit = progress(frame, INTRO_END - 14, 14);
+  const exit = progress(frame, end - 14, 14);
 
-  if (frame > INTRO_END) return null;
+  if (frame > end) return null;
 
   return (
     <AbsoluteFill style={{ justifyContent: "center", opacity: 1 - exit }}>
@@ -95,10 +118,34 @@ const BreakingIntro: React.FC<{ headline: string }> = ({ headline }) => {
   );
 };
 
-const LowerThird: React.FC<{ location: string; headline: string }> = ({ location, headline }) => {
+/** A red band sweeping across the screen between stories. */
+const WipeOpener: React.FC = () => {
   const frame = useCurrentFrame();
-  const tab = progress(frame, INTRO_END - 6, 12);
-  const bar = progress(frame, INTRO_END, 16);
+  const x = progress(frame, 0, OPENER_FRAMES.wipe) * 2400 - 1300;
+  if (frame > OPENER_FRAMES.wipe) return null;
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: -100,
+        bottom: -100,
+        left: x,
+        width: 1100,
+        transform: "skewX(-18deg)",
+        background: `linear-gradient(90deg, transparent, ${COLORS.red} 25%, ${COLORS.red} 75%, transparent)`,
+      }}
+    />
+  );
+};
+
+const LowerThird: React.FC<{ location: string; headline: string; start: number }> = ({
+  location,
+  headline,
+  start,
+}) => {
+  const frame = useCurrentFrame();
+  const tab = progress(frame, start - 6, 12);
+  const bar = progress(frame, start, 16);
 
   return (
     <div
@@ -137,7 +184,7 @@ const LowerThird: React.FC<{ location: string; headline: string }> = ({ location
           background: COLORS.white,
           color: COLORS.navyDeep,
           fontWeight: 800,
-          fontSize: 38,
+          fontSize: headline.length > 38 ? 32 : 38,
           clipPath: `inset(0 ${(1 - bar) * 100}% 0 0)`,
           whiteSpace: "nowrap",
           overflow: "hidden",
@@ -149,93 +196,97 @@ const LowerThird: React.FC<{ location: string; headline: string }> = ({ location
   );
 };
 
-const Ticker: React.FC<{ source: string; date: string; items: string[] }> = ({ source, date, items }) => {
+/** Persistent across scenes: background footage/graphics behind the news screen. */
+export const ScreenBackground: React.FC<{ backgroundVideo?: string }> = ({ backgroundVideo }) => (
+  <ScreenArea>
+    <NewsBackground backgroundVideo={backgroundVideo} />
+  </ScreenArea>
+);
+
+/** Persistent across scenes: scrolling ticker at the bottom of the news screen. */
+export const Ticker: React.FC<{ source: string; date: string; items: string[]; totalFrames: number }> = ({
+  source,
+  date,
+  items,
+  totalFrames,
+}) => {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
   const speed = 4;
-  const copies = Math.ceil((durationInFrames * speed) / 1200) + 2;
+  const copies = Math.ceil((totalFrames * speed) / 1200) + 2;
   const enter = progress(frame, 10, 14);
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        height: TICKER_HEIGHT,
-        display: "flex",
-        background: COLORS.navyDeep,
-        borderTop: `3px solid ${COLORS.gold}`,
-        transform: `translateY(${(1 - enter) * TICKER_HEIGHT}px)`,
-        fontFamily: FONT_DISPLAY,
-      }}
-    >
+    <ScreenArea>
       <div
         style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: TICKER_HEIGHT,
           display: "flex",
-          alignItems: "center",
-          padding: "0 22px",
-          background: COLORS.white,
-          color: COLORS.navyDeep,
-          fontWeight: 800,
-          fontSize: 26,
-          whiteSpace: "nowrap",
-          zIndex: 1,
+          background: COLORS.navyDeep,
+          borderTop: `3px solid ${COLORS.gold}`,
+          transform: `translateY(${(1 - enter) * TICKER_HEIGHT}px)`,
+          fontFamily: FONT_DISPLAY,
         }}
       >
-        {source} · {date}
-      </div>
-      <div style={{ flex: 1, overflow: "hidden", display: "flex", alignItems: "center" }}>
         <div
           style={{
+            display: "flex",
+            alignItems: "center",
+            padding: "0 22px",
+            background: COLORS.white,
+            color: COLORS.navyDeep,
+            fontWeight: 800,
+            fontSize: 26,
             whiteSpace: "nowrap",
-            color: COLORS.white,
-            fontWeight: 700,
-            fontSize: 28,
-            transform: `translateX(${40 - frame * speed}px)`,
+            zIndex: 1,
           }}
         >
-          {Array.from({ length: copies }).flatMap((_, c) =>
-            items.map((item, i) => (
-              <span key={`${c}-${i}`}>
-                {item}
-                <span style={{ color: COLORS.gold, margin: "0 26px" }}>◆</span>
-              </span>
-            )),
-          )}
+          {source} · {date}
+        </div>
+        <div style={{ flex: 1, overflow: "hidden", display: "flex", alignItems: "center" }}>
+          <div
+            style={{
+              whiteSpace: "nowrap",
+              color: COLORS.white,
+              fontWeight: 700,
+              fontSize: 28,
+              transform: `translateX(${40 - frame * speed}px)`,
+            }}
+          >
+            {Array.from({ length: copies }).flatMap((_, c) =>
+              items.map((item, i) => (
+                <span key={`${c}-${i}`}>
+                  {item}
+                  <span style={{ color: COLORS.gold, margin: "0 26px" }}>◆</span>
+                </span>
+              )),
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </ScreenArea>
   );
 };
 
-export const NewsScreen: React.FC<{ episode: Episode }> = ({ episode }) => {
-  const { durationInFrames } = useVideoConfig();
-  const statSpan = (durationInFrames - INTRO_END) / Math.max(episode.stats.length, 1);
+/** Per-scene overlays on the news screen. */
+export const NewsScreen: React.FC<{ episode: Episode; scene: Scene; durationInFrames: number }> = ({
+  episode,
+  scene,
+  durationInFrames,
+}) => {
+  const opener = scene.opener ?? "wipe";
+  const contentStart = OPENER_FRAMES[opener];
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        top: LAYOUT.screenTop,
-        left: 0,
-        width: "100%",
-        height: LAYOUT.screenHeight,
-        overflow: "hidden",
-      }}
-    >
-      <NewsBackground backgroundVideo={episode.backgroundVideo} />
-      {episode.stats.map((stat, i) => {
-        const from = Math.round(INTRO_END + i * statSpan);
-        const isLast = i === episode.stats.length - 1;
-        const to = isLast ? durationInFrames + 30 : Math.round(from + statSpan);
-        return <StatCard key={stat.label} stat={stat} from={from} to={to} />;
-      })}
-      <BreakingIntro headline={episode.headline} />
-      <TopBar category={episode.category} date={episode.date} />
-      <LowerThird location={episode.location} headline={episode.headline} />
-      <Ticker source={episode.source} date={episode.date} items={episode.tickers} />
-    </div>
+    <ScreenArea>
+      <ScreenVisualView visual={scene.visual} from={contentStart} durationInFrames={durationInFrames} />
+      {opener === "breaking" ? <BreakingOpener headline={scene.headline} /> : null}
+      <TopBar category={scene.category} date={episode.date} />
+      <LowerThird location={scene.location} headline={scene.headline} start={contentStart} />
+      {opener === "wipe" ? <WipeOpener /> : null}
+    </ScreenArea>
   );
 };
