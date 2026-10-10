@@ -1,7 +1,7 @@
 import React from "react";
 import { useCurrentFrame } from "remotion";
 import { FONT_DISPLAY } from "../fonts";
-import { COLORS } from "../theme";
+import { COLORS, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
 import { StatCard } from "./StatCard";
 import { ScreenVisual } from "./types";
@@ -153,14 +153,17 @@ export const ScreenVisualView: React.FC<{ visual: ScreenVisual; from: number; du
     return <Title {...visual} from={from} />;
   }
 
+  // Stats with `at` appear when they are read out; the rest share the scene evenly.
   const span = (durationInFrames - from) / Math.max(visual.stats.length, 1);
+  const starts = visual.stats.map((stat, i) =>
+    stat.at !== undefined ? Math.max(from, Math.round(stat.at * VIDEO.fps)) : Math.round(from + i * span),
+  );
   return (
     <>
       {visual.stats.map((stat, i) => {
-        const start = Math.round(from + i * span);
         const isLast = i === visual.stats.length - 1;
-        const end = isLast ? durationInFrames + 30 : Math.round(start + span);
-        return <StatCard key={stat.label} stat={stat} from={start} to={end} />;
+        const end = isLast ? durationInFrames + 30 : starts[i + 1];
+        return <StatCard key={stat.label} stat={stat} from={starts[i]} to={end} />;
       })}
     </>
   );

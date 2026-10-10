@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Series } from "remotion";
+import { AbsoluteFill, Audio, Series, staticFile } from "remotion";
 import "../fonts";
 import { COLORS, VIDEO } from "../theme";
 import { Header } from "./Header";
@@ -28,6 +28,7 @@ const ScenePanel: React.FC<{ scene: Scene; durationInFrames: number }> = ({ scen
 export const NewsBrief: React.FC<{ episode: Episode }> = ({ episode }) => {
   return (
     <AbsoluteFill style={{ background: COLORS.navy }}>
+      {episode.audio ? <Audio src={staticFile(episode.audio)} /> : null}
       <ScreenBackground backgroundVideo={episode.backgroundVideo} />
       <Series>
         {episode.scenes.map((scene, i) => {

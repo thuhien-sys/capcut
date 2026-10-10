@@ -1,13 +1,21 @@
 import React from "react";
 import { useCurrentFrame } from "remotion";
 import { FONT_BODY, FONT_DISPLAY, FONT_IPA } from "../fonts";
-import { COLORS, LAYOUT } from "../theme";
+import { COLORS, LAYOUT, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
 import { RichText } from "./RichText";
 import { CardScene, NewsScene, PatternScene, VerbListScene, VocabItem } from "./types";
 
 const PADDING_X = 44;
 const DIVIDER_X = 712;
+
+/** Frame an item appears: its `at` time if set, otherwise a stagger. */
+const itemStart = (at: number | undefined, fallback: number) =>
+  at !== undefined ? Math.round(at * VIDEO.fps) : fallback;
+
+/** Once the narrator moves on to the next timed item, earlier ones dim. */
+const dimmed = (frame: number, nextAt: number | undefined) =>
+  nextAt !== undefined && frame >= Math.round(nextAt * VIDEO.fps) ? 0.5 : 1;
 
 /** The lower half of the frame; fades out over the last frames of its scene. */
 const PanelArea: React.FC<{ durationInFrames: number; children: React.ReactNode; style?: React.CSSProperties }> = ({
@@ -160,7 +168,7 @@ export const VerbListPanel: React.FC<{ scene: VerbListScene; durationInFrames: n
       </div>
       <div style={{ marginTop: 18 }}>
         {scene.items.map((item, i) => {
-          const start = 26 + i * 12;
+          const start = itemStart(item.at, 26 + i * 12);
           const p = progress(frame, start, 16);
           return (
             <div
@@ -210,8 +218,8 @@ export const PatternPanel: React.FC<{ scene: PatternScene; durationInFrames: num
       <SectionTitle delay={6}>{scene.title}</SectionTitle>
       <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 24 }}>
         {scene.items.map((item, i) => {
-          const start = 16 + i * 14;
-          const p = progress(frame, start, 16);
+          const start = itemStart(item.at, 16 + i * 14);
+          const p = progress(frame, start, 16) * dimmed(frame, scene.items[i + 1]?.at);
           return (
             <div
               key={item.pattern}
@@ -270,7 +278,7 @@ export const CardPanel: React.FC<{ scene: CardScene; durationInFrames: number }>
         <div
           key={line.text}
           style={{
-            ...fadeUp(frame, 10 + i * 14, 18),
+            ...fadeUp(frame, itemStart(line.at, 10 + i * 14), 18),
             fontFamily: line.size === "lg" ? FONT_DISPLAY : FONT_BODY,
             fontWeight: line.size === "lg" ? 900 : 700,
             fontSize: CARD_SIZES[line.size ?? "md"],
@@ -278,7 +286,7 @@ export const CardPanel: React.FC<{ scene: CardScene; durationInFrames: number }>
             color: line.accent ? COLORS.gold : COLORS.white,
           }}
         >
-          <RichText text={line.text} highlightStart={20 + i * 14} />
+          <RichText text={line.text} highlightStart={itemStart(line.at, 10 + i * 14) + 10} />
         </div>
       ))}
     </PanelArea>
