@@ -42,6 +42,9 @@ const PanelArea: React.FC<{ durationInFrames: number; children: React.ReactNode;
   );
 };
 
+/** Stress marks (ˈ ˌ) allow a line break before them; glue them to the preceding letter. */
+const keepIpaWords = (ipa: string) => ipa.replace(/(\S)([ˈˌ])/g, "$1\u2060$2");
+
 const Vocab: React.FC<{ item: VocabItem; delay: number; compact: boolean }> = ({ item, delay, compact }) => {
   const frame = useCurrentFrame();
   const p = progress(frame, delay, 16);
@@ -53,7 +56,9 @@ const Vocab: React.FC<{ item: VocabItem; delay: number; compact: boolean }> = ({
         {item.pos ? ` (${item.pos})` : ""}:
       </div>
       {item.ipa ? (
-        <div style={{ fontFamily: FONT_IPA, fontSize: size, color: COLORS.white, marginTop: 4 }}>{item.ipa}</div>
+        <div style={{ fontFamily: FONT_IPA, fontSize: size, color: COLORS.white, marginTop: 4 }}>
+          {keepIpaWords(item.ipa)}
+        </div>
       ) : null}
       <div style={{ fontFamily: FONT_BODY, fontSize: size, color: COLORS.white, marginTop: 2 }}>{item.meaning}</div>
     </div>
@@ -65,6 +70,10 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
   const divider = progress(frame, 6, 24);
   const vocabChars = scene.vocab.reduce((n, v) => n + v.word.length + (v.ipa ?? "").length + v.meaning.length, 0);
   const compact = vocabChars > 150;
+  // Fit the bilingual text to the panel: shrink long scenes, enlarge short ones a little.
+  const textChars =
+    scene.english.length + scene.vietnamese.length + (scene.englishTitle?.length ?? 0) + (scene.vietnameseTitle?.length ?? 0);
+  const scale = Math.min(1.15, Math.max(0.8, Math.sqrt(700 / textChars)));
 
   return (
     <PanelArea durationInFrames={durationInFrames}>
@@ -77,19 +86,25 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
           fontFamily: FONT_BODY,
         }}
       >
-        <div style={{ ...fadeUp(frame, 8, 18), fontWeight: 700, fontSize: 37, lineHeight: 1.36, color: COLORS.white }}>
+        <div style={{ ...fadeUp(frame, 8, 18), fontWeight: 700, fontSize: 37 * scale, lineHeight: 1.36, color: COLORS.white }}>
+          {scene.englishTitle ? (
+            <div style={{ color: COLORS.gold, fontWeight: 800, marginBottom: 12 * scale }}>{scene.englishTitle}</div>
+          ) : null}
           <RichText text={scene.english} highlightStart={26} />
         </div>
         <div
           style={{
             ...fadeUp(frame, 40, 18),
-            marginTop: 46,
+            marginTop: 46 * scale,
             fontWeight: 400,
-            fontSize: 33,
+            fontSize: 33 * scale,
             lineHeight: 1.42,
             color: COLORS.textSoft,
           }}
         >
+          {scene.vietnameseTitle ? (
+            <div style={{ color: COLORS.white, fontWeight: 700, marginBottom: 10 * scale }}>{scene.vietnameseTitle}</div>
+          ) : null}
           {scene.vietnamese}
         </div>
       </div>
@@ -280,10 +295,10 @@ export const CardPanel: React.FC<{ scene: CardScene; durationInFrames: number }>
           style={{
             ...fadeUp(frame, itemStart(line.at, 10 + i * 14), 18),
             fontFamily: line.size === "lg" ? FONT_DISPLAY : FONT_BODY,
-            fontWeight: line.size === "lg" ? 900 : 700,
+            fontWeight: line.size === "lg" ? 900 : line.soft ? 400 : 700,
             fontSize: CARD_SIZES[line.size ?? "md"],
             lineHeight: 1.3,
-            color: line.accent ? COLORS.gold : COLORS.white,
+            color: line.accent ? COLORS.gold : line.soft ? COLORS.textSoft : COLORS.white,
           }}
         >
           <RichText text={line.text} highlightStart={itemStart(line.at, 10 + i * 14) + 10} />

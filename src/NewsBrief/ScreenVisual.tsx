@@ -141,6 +141,64 @@ const Title: React.FC<{
   );
 };
 
+const Chips: React.FC<{
+  kicker: string;
+  title: string;
+  chips: { name: string; note?: string }[];
+  from: number;
+}> = ({ kicker, title, chips, from }) => {
+  const frame = useCurrentFrame();
+  const t = progress(frame, from + 4, 16);
+
+  return (
+    <div style={{ position: "absolute", left: 60, right: 60, top: 104 }}>
+      <div style={fadeUp(frame, from, 14)}>
+        <Chip>{kicker}</Chip>
+      </div>
+      <div
+        style={{
+          marginTop: 12,
+          opacity: t,
+          transform: `translateX(${(1 - t) * -40}px)`,
+          fontFamily: FONT_DISPLAY,
+          fontWeight: 900,
+          fontSize: title.length > 18 ? 54 : title.length > 12 ? 66 : 84,
+          lineHeight: 1.1,
+          whiteSpace: "nowrap",
+          color: COLORS.white,
+          textShadow: "0 6px 24px rgba(0,0,0,0.45)",
+        }}
+      >
+        {title}
+      </div>
+      <div style={{ marginTop: 18, display: "flex", flexWrap: "wrap", gap: 14 }}>
+        {chips.map((chip, i) => {
+          const p = progress(frame, from + 16 + i * 8, 14);
+          return (
+            <div
+              key={chip.name}
+              style={{
+                padding: chip.note ? "8px 20px 10px" : "12px 22px",
+                background: "rgba(8,22,39,0.82)",
+                borderLeft: `6px solid ${COLORS.gold}`,
+                opacity: p,
+                transform: `scale(${0.85 + 0.15 * p})`,
+                transformOrigin: "left center",
+                fontFamily: FONT_DISPLAY,
+              }}
+            >
+              <div style={{ fontWeight: 800, fontSize: 34, color: COLORS.white }}>{chip.name}</div>
+              {chip.note ? (
+                <div style={{ fontWeight: 700, fontSize: 21, color: COLORS.textSoft, marginTop: 2 }}>{chip.note}</div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 export const ScreenVisualView: React.FC<{ visual: ScreenVisual; from: number; durationInFrames: number }> = ({
   visual,
   from,
@@ -148,6 +206,9 @@ export const ScreenVisualView: React.FC<{ visual: ScreenVisual; from: number; du
 }) => {
   if (visual.type === "points") {
     return <Points label={visual.label} points={visual.points} from={from} />;
+  }
+  if (visual.type === "chips") {
+    return <Chips {...visual} from={from} />;
   }
   if (visual.type === "title") {
     return <Title {...visual} from={from} />;

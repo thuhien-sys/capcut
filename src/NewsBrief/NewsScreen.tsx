@@ -67,7 +67,7 @@ const TopBar: React.FC<{ category: string; date: string }> = ({ category, date }
   );
 };
 
-const BreakingOpener: React.FC<{ headline: string }> = ({ headline }) => {
+const BreakingOpener: React.FC<{ headline: string; text: string }> = ({ headline, text: label }) => {
   const frame = useCurrentFrame();
   const end = OPENER_FRAMES.breaking;
   const wipe = progress(frame, 0, 14);
@@ -97,7 +97,7 @@ const BreakingOpener: React.FC<{ headline: string }> = ({ headline }) => {
             transform: `translateX(${(1 - text) * 60}px)`,
           }}
         >
-          BREAKING NEWS
+          {label}
         </div>
       </div>
       <div
@@ -283,7 +283,9 @@ export const NewsScreen: React.FC<{ episode: Episode; scene: Scene; durationInFr
   return (
     <ScreenArea>
       <ScreenVisualView visual={scene.visual} from={contentStart} durationInFrames={durationInFrames} />
-      {opener === "breaking" ? <BreakingOpener headline={scene.headline} /> : null}
+      {opener === "breaking" ? (
+        <BreakingOpener headline={scene.headline} text={scene.openerText ?? "BREAKING NEWS"} />
+      ) : null}
       <TopBar category={scene.category} date={episode.date} />
       <LowerThird location={scene.location} headline={scene.headline} start={contentStart} />
       {opener === "wipe" ? <WipeOpener /> : null}

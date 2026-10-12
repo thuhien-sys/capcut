@@ -22,7 +22,8 @@ export type VocabItem = {
 export type ScreenVisual =
   | { type: "stats"; stats: Stat[] }
   | { type: "points"; label: string; points: string[] }
-  | { type: "title"; kicker: string; title: string; subtitle?: string; direction?: "up" | "down" };
+  | { type: "title"; kicker: string; title: string; subtitle?: string; direction?: "up" | "down" }
+  | { type: "chips"; kicker: string; title: string; chips: { name: string; note?: string }[] };
 
 type SceneBase = {
   seconds: number;
@@ -32,11 +33,16 @@ type SceneBase = {
   visual: ScreenVisual;
   /** "breaking" plays the BREAKING NEWS opener; "wipe" is a short transition. */
   opener?: "breaking" | "wipe";
+  /** Text on the "breaking" opener band; defaults to BREAKING NEWS. */
+  openerText?: string;
 };
 
 /** Text with **double asterisks** marks highlighted words. */
 export type NewsScene = SceneBase & {
   type: "news";
+  /** Optional bold heading lines shown above each paragraph. */
+  englishTitle?: string;
+  vietnameseTitle?: string;
   english: string;
   vietnamese: string;
   vocab: VocabItem[];
@@ -58,7 +64,8 @@ export type PatternScene = SceneBase & {
 
 export type CardScene = SceneBase & {
   type: "card";
-  lines: { text: string; size?: "lg" | "md" | "sm"; accent?: boolean; at?: number }[];
+  /** `soft`: Vietnamese-style secondary text (regular weight, muted). */
+  lines: { text: string; size?: "lg" | "md" | "sm"; accent?: boolean; soft?: boolean; at?: number }[];
 };
 
 export type Scene = NewsScene | VerbListScene | PatternScene | CardScene;
