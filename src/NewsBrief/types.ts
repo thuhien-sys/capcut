@@ -1,3 +1,5 @@
+import type { IconName } from "./Icons";
+
 export type Stat = {
   label: string;
   prefix?: string;
@@ -21,9 +23,12 @@ export type VocabItem = {
 /** What the news screen (top video area) shows under the lower third. */
 export type ScreenVisual =
   | { type: "stats"; stats: Stat[] }
-  | { type: "points"; label: string; points: string[] }
+  | { type: "points"; label: string; points: string[]; /** Shown instead of the numbers. */ icons?: IconName[] }
   | { type: "title"; kicker: string; title: string; subtitle?: string; direction?: "up" | "down" }
   | { type: "chips"; kicker: string; title: string; chips: { name: string; note?: string }[] };
+
+/** Illustration at the top right of the news screen: an animated icon, or a photo in /public. */
+export type SceneArt = { icon: IconName; satellites?: IconName[] } | { image: string };
 
 type SceneBase = {
   seconds: number;
@@ -35,6 +40,7 @@ type SceneBase = {
   opener?: "breaking" | "wipe";
   /** Text on the "breaking" opener band; defaults to BREAKING NEWS. */
   openerText?: string;
+  art?: SceneArt;
 };
 
 /** Text with **double asterisks** marks highlighted words. */

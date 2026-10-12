@@ -1,3 +1,4 @@
+import { IconName } from "../NewsBrief/Icons";
 import { Episode } from "../NewsBrief/types";
 
 const FOUR_GROUPS = [
@@ -6,6 +7,7 @@ const FOUR_GROUPS = [
   "Joint-venture banks",
   "Wholly foreign-owned banks",
 ];
+const GROUP_ICONS: IconName[] = ["landmark", "users", "handshake", "globe"];
 
 export const commercialBanks20261011: Episode = {
   channel: "THE ECONOMIC ENGLISH BRIEF",
@@ -26,6 +28,7 @@ export const commercialBanks20261011: Episode = {
       location: "VIETNAM",
       headline: "Vietnam's commercial banking system",
       visual: { type: "title", kicker: "TOP STORY", title: "COMMERCIAL BANKS", subtitle: "Vietnam's banking system" },
+      art: { icon: "landmark", satellites: ["coins", "banknote", "building"] },
       lines: [
         { text: "Hello everyone, and welcome to", size: "md" },
         { text: "THE ECONOMIC ENGLISH BRIEF", size: "lg", accent: true },
@@ -46,6 +49,7 @@ export const commercialBanks20261011: Episode = {
         title: "BANK GROUPS",
         subtitle: "How are Vietnam's commercial banks classified?",
       },
+      art: { icon: "question", satellites: ["landmark", "users", "globe"] },
       lines: [
         { text: "Have you ever wondered how **commercial banks** in Vietnam are **classified**?", size: "md" },
         {
@@ -62,6 +66,7 @@ export const commercialBanks20261011: Episode = {
       location: "VIETNAM",
       headline: "What is a commercial bank?",
       visual: { type: "title", kicker: "DEFINITION", title: "COMMERCIAL BANK", subtitle: "Law No. 32/2024/QH15" },
+      art: { icon: "scale", satellites: ["fileText", "gavel", "coins"] },
       english:
         "Under Vietnam's **Law on Credit Institutions** No. 32/2024/QH15, a **commercial bank** is a type of bank that may conduct **banking operations** and other business activities **in accordance with the law** for **profit purposes**.",
       vietnamese:
@@ -78,7 +83,7 @@ export const commercialBanks20261011: Episode = {
       category: "BANKING",
       location: "VIETNAM",
       headline: "Four main groups of commercial banks",
-      visual: { type: "points", label: "BY OWNERSHIP & CAPITAL", points: FOUR_GROUPS },
+      visual: { type: "points", label: "BY OWNERSHIP & CAPITAL", points: FOUR_GROUPS, icons: GROUP_ICONS },
       english:
         "Based on **ownership structure** and **sources of investment capital**, Vietnam's commercial banking system **can be classified** into **four main groups** for practical purposes.",
       vietnamese:
@@ -102,6 +107,7 @@ export const commercialBanks20261011: Episode = {
           { name: "Agribank", note: "100% State-owned" },
         ],
       },
+      art: { icon: "landmark", satellites: ["shieldCheck", "coins"] },
       englishTitle: "First, state-owned commercial banks.",
       english:
         "Notable examples include Vietcombank, VietinBank, BIDV, and Agribank. Agribank is **wholly owned** by the State, while the other three are **joint-stock commercial banks** in which the State holds a **controlling stake**.",
@@ -122,6 +128,7 @@ export const commercialBanks20261011: Episode = {
         title: "PRIVATE JOINT-STOCK",
         chips: [{ name: "MB" }, { name: "Techcombank" }, { name: "ACB" }, { name: "Sacombank" }, { name: "TPBank" }],
       },
+      art: { icon: "users", satellites: ["chartPie", "building", "banknote"] },
       englishTitle: "Second, privately owned joint-stock commercial banks.",
       english:
         "These banks are **predominantly privately owned**. Representative examples include MB, Techcombank, ACB, Sacombank, and TPBank.",
@@ -147,6 +154,7 @@ export const commercialBanks20261011: Episode = {
           { name: "VRB", note: "Vietnam-Russia Joint Venture Bank" },
         ],
       },
+      art: { icon: "handshake", satellites: ["handCoins", "globe", "building"] },
       englishTitle: "Third, joint-venture banks.",
       english:
         "These banks are established in Vietnam through **capital contributions** from Vietnamese and **foreign parties**. Two notable examples are Indovina Bank, commonly known as IVB, and the Vietnam-Russia Joint Venture Bank, or VRB.",
@@ -172,6 +180,7 @@ export const commercialBanks20261011: Episode = {
           { name: "Woori Bank Vietnam" },
         ],
       },
+      art: { icon: "earth", satellites: ["building", "briefcase", "shieldCheck"] },
       englishTitle: "Fourth, wholly foreign-owned banks.",
       english:
         "These banks are established in Vietnam as Vietnamese **legal entities** and are **wholly owned** by **foreign credit institutions**. Familiar names include HSBC Vietnam, Shinhan Bank Vietnam, UOB Vietnam, and Woori Bank Vietnam.",
@@ -189,7 +198,7 @@ export const commercialBanks20261011: Episode = {
       category: "BANKING",
       location: "VIETNAM",
       headline: "Who owns Vietnam's banks?",
-      visual: { type: "points", label: "RECAP: 4 GROUPS", points: FOUR_GROUPS },
+      visual: { type: "points", label: "RECAP: 4 GROUPS", points: FOUR_GROUPS, icons: GROUP_ICONS },
       english:
         "Understanding these groups gives us a clearer picture of the **ownership structure** of Vietnam's **banking sector**.",
       vietnamese:
@@ -208,6 +217,7 @@ export const commercialBanks20261011: Episode = {
         title: "THANK YOU",
         subtitle: "See you in the next update",
       },
+      art: { icon: "graduationCap", satellites: ["bookOpen", "newspaper", "sparkles"] },
       lines: [
         { text: "That's all for today's **Economic English Brief**.", size: "md" },
         { text: "Understand the news. Learn the language.", size: "md", accent: true },

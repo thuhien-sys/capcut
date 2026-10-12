@@ -3,8 +3,16 @@ import { useCurrentFrame } from "remotion";
 import { FONT_DISPLAY } from "../fonts";
 import { COLORS, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
+import { ICONS, IconName } from "./Icons";
+import { ART_SIZE } from "./SceneArt";
 import { StatCard } from "./StatCard";
 import { ScreenVisual } from "./types";
+
+/** Right edge of the visual: leaves room for scene art when there is some. */
+const contentRight = (narrow: boolean) => (narrow ? ART_SIZE + 90 : 60);
+
+/** Largest font size (up to `max`) that keeps a one-line title within `width`. */
+const fitTitle = (title: string, width: number, max: number) => Math.min(max, Math.floor(width / (title.length * 0.7)));
 
 const Chip: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div
@@ -23,7 +31,12 @@ const Chip: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </div>
 );
 
-const Points: React.FC<{ label: string; points: string[]; from: number }> = ({ label, points, from }) => {
+const Points: React.FC<{ label: string; points: string[]; icons?: IconName[]; from: number }> = ({
+  label,
+  points,
+  icons,
+  from,
+}) => {
   const frame = useCurrentFrame();
   return (
     <div style={{ position: "absolute", left: 60, right: 60, top: 104 }}>
@@ -34,6 +47,7 @@ const Points: React.FC<{ label: string; points: string[]; from: number }> = ({ l
         {points.map((point, i) => {
           const start = from + 10 + i * 14;
           const p = progress(frame, start, 16);
+          const Icon = icons?.[i] ? ICONS[icons[i]] : null;
           return (
             <div
               key={point}
@@ -60,7 +74,7 @@ const Points: React.FC<{ label: string; points: string[]; from: number }> = ({ l
                   fontSize: 30,
                 }}
               >
-                {i + 1}
+                {Icon ? <Icon size={32} color={COLORS.white} strokeWidth={2.2} /> : i + 1}
               </div>
               <div
                 style={{
@@ -88,13 +102,14 @@ const Title: React.FC<{
   subtitle?: string;
   direction?: "up" | "down";
   from: number;
-}> = ({ kicker, title, subtitle, direction, from }) => {
+  narrow: boolean;
+}> = ({ kicker, title, subtitle, direction, from, narrow }) => {
   const frame = useCurrentFrame();
   const t = progress(frame, from + 6, 18);
   const arrowColor = direction === "down" ? COLORS.down : COLORS.up;
 
   return (
-    <div style={{ position: "absolute", left: 60, right: 60, top: 110 }}>
+    <div style={{ position: "absolute", left: 60, right: contentRight(narrow), top: 110 }}>
       <div style={fadeUp(frame, from, 14)}>
         <Chip>{kicker}</Chip>
       </div>
@@ -109,7 +124,7 @@ const Title: React.FC<{
           transformOrigin: "left center",
           fontFamily: FONT_DISPLAY,
           fontWeight: 900,
-          fontSize: title.length > 12 ? 80 : 104,
+          fontSize: narrow ? fitTitle(title, 1080 - 60 - contentRight(true), 92) : title.length > 12 ? 80 : 104,
           whiteSpace: "nowrap",
           lineHeight: 1.05,
           color: COLORS.white,
@@ -146,12 +161,13 @@ const Chips: React.FC<{
   title: string;
   chips: { name: string; note?: string }[];
   from: number;
-}> = ({ kicker, title, chips, from }) => {
+  narrow: boolean;
+}> = ({ kicker, title, chips, from, narrow }) => {
   const frame = useCurrentFrame();
   const t = progress(frame, from + 4, 16);
 
   return (
-    <div style={{ position: "absolute", left: 60, right: 60, top: 104 }}>
+    <div style={{ position: "absolute", left: 60, right: contentRight(narrow), top: 104 }}>
       <div style={fadeUp(frame, from, 14)}>
         <Chip>{kicker}</Chip>
       </div>
@@ -162,7 +178,13 @@ const Chips: React.FC<{
           transform: `translateX(${(1 - t) * -40}px)`,
           fontFamily: FONT_DISPLAY,
           fontWeight: 900,
-          fontSize: title.length > 18 ? 54 : title.length > 12 ? 66 : 84,
+          fontSize: narrow
+            ? fitTitle(title, 1080 - 60 - contentRight(true), 72)
+            : title.length > 18
+              ? 54
+              : title.length > 12
+                ? 66
+                : 84,
           lineHeight: 1.1,
           whiteSpace: "nowrap",
           color: COLORS.white,
@@ -187,9 +209,11 @@ const Chips: React.FC<{
                 fontFamily: FONT_DISPLAY,
               }}
             >
-              <div style={{ fontWeight: 800, fontSize: 34, color: COLORS.white }}>{chip.name}</div>
+              <div style={{ fontWeight: 800, fontSize: narrow ? 28 : 34, color: COLORS.white }}>{chip.name}</div>
               {chip.note ? (
-                <div style={{ fontWeight: 700, fontSize: 21, color: COLORS.textSoft, marginTop: 2 }}>{chip.note}</div>
+                <div style={{ fontWeight: 700, fontSize: narrow ? 18 : 21, color: COLORS.textSoft, marginTop: 2 }}>
+                  {chip.note}
+                </div>
               ) : null}
             </div>
           );
@@ -199,19 +223,21 @@ const Chips: React.FC<{
   );
 };
 
-export const ScreenVisualView: React.FC<{ visual: ScreenVisual; from: number; durationInFrames: number }> = ({
-  visual,
-  from,
-  durationInFrames,
-}) => {
+export const ScreenVisualView: React.FC<{
+  visual: ScreenVisual;
+  from: number;
+  durationInFrames: number;
+  /** True when scene art takes the right side of the screen. */
+  narrow: boolean;
+}> = ({ visual, from, durationInFrames, narrow }) => {
   if (visual.type === "points") {
-    return <Points label={visual.label} points={visual.points} from={from} />;
+    return <Points label={visual.label} points={visual.points} icons={visual.icons} from={from} />;
   }
   if (visual.type === "chips") {
-    return <Chips {...visual} from={from} />;
+    return <Chips {...visual} from={from} narrow={narrow} />;
   }
   if (visual.type === "title") {
-    return <Title {...visual} from={from} />;
+    return <Title {...visual} from={from} narrow={narrow} />;
   }
 
   // Stats with `at` appear when they are read out; the rest share the scene evenly.
