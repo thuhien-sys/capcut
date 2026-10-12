@@ -71,9 +71,14 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
   const vocabChars = scene.vocab.reduce((n, v) => n + v.word.length + (v.ipa ?? "").length + v.meaning.length, 0);
   const compact = vocabChars > 150;
   // Fit the bilingual text to the panel: shrink long scenes, enlarge short ones a little.
+  // Each heading also costs a partly empty line, hence the extra 60 characters.
+  const headingChars = (t?: string) => (t ? t.length + 60 : 0);
   const textChars =
-    scene.english.length + scene.vietnamese.length + (scene.englishTitle?.length ?? 0) + (scene.vietnameseTitle?.length ?? 0);
-  const scale = Math.min(1.15, Math.max(0.8, Math.sqrt(700 / textChars)));
+    scene.english.length +
+    scene.vietnamese.length +
+    headingChars(scene.englishTitle) +
+    headingChars(scene.vietnameseTitle);
+  const scale = Math.min(1.1, Math.max(0.75, Math.sqrt(520 / textChars)));
 
   return (
     <PanelArea durationInFrames={durationInFrames}>
