@@ -13,7 +13,8 @@ export const commercialBanks20261011: Episode = {
   channel: "THE ECONOMIC ENGLISH BRIEF",
   source: "Explainer",
   date: "October 11, 2026",
-  // Narration to come; scene lengths below are estimates until it arrives.
+  // Narration lives outside git (public/audio is ignored); scene lengths below follow it.
+  audio: "audio/2026-10-11-banks.m4a",
   tickers: [
     "Law on Credit Institutions No. 32/2024/QH15",
     ...FOUR_GROUPS.map((group, i) => `Group ${i + 1}: ${group}`),
@@ -21,7 +22,7 @@ export const commercialBanks20261011: Episode = {
   scenes: [
     {
       type: "card",
-      seconds: 14,
+      seconds: 14.2,
       opener: "breaking",
       openerText: "TOP STORY",
       category: "TOP STORY",
@@ -30,16 +31,16 @@ export const commercialBanks20261011: Episode = {
       visual: { type: "title", kicker: "TOP STORY", title: "COMMERCIAL BANKS", subtitle: "Vietnam's banking system" },
       art: { icon: "landmark", satellites: ["coins", "banknote", "building"] },
       lines: [
-        { text: "Hello everyone, and welcome to", size: "md" },
-        { text: "THE ECONOMIC ENGLISH BRIEF", size: "lg", accent: true },
-        { text: "Understand the news. Learn the language.", size: "sm" },
-        { text: "Our top story today is **Vietnam's commercial banking system**.", size: "md" },
-        { text: "Let's get started.", size: "sm" },
+        { text: "Hello everyone, and welcome to", size: "md", at: 0.2 },
+        { text: "THE ECONOMIC ENGLISH BRIEF", size: "lg", accent: true, at: 2 },
+        { text: "Understand the news. Learn the language.", size: "sm", at: 4.6 },
+        { text: "Our top story today is **Vietnam's commercial banking system**.", size: "md", at: 7.7 },
+        { text: "Let's get started.", size: "sm", at: 12.4 },
       ],
     },
     {
       type: "card",
-      seconds: 9,
+      seconds: 7.4,
       category: "BANKING",
       location: "VIETNAM",
       headline: "How are commercial banks classified?",
@@ -51,17 +52,18 @@ export const commercialBanks20261011: Episode = {
       },
       art: { icon: "question", satellites: ["landmark", "users", "globe"] },
       lines: [
-        { text: "Have you ever wondered how **commercial banks** in Vietnam are **classified**?", size: "md" },
+        { text: "Have you ever wondered how **commercial banks** in Vietnam are **classified**?", size: "md", at: 0.3 },
         {
           text: "Bạn có biết hệ thống ngân hàng thương mại tại Việt Nam được phân loại như thế nào?",
           size: "sm",
           soft: true,
+          at: 2.5,
         },
       ],
     },
     {
       type: "news",
-      seconds: 32,
+      seconds: 23.4,
       category: "BANKING",
       location: "VIETNAM",
       headline: "What is a commercial bank?",
@@ -79,7 +81,7 @@ export const commercialBanks20261011: Episode = {
     },
     {
       type: "news",
-      seconds: 24,
+      seconds: 15.6,
       category: "BANKING",
       location: "VIETNAM",
       headline: "Four main groups of commercial banks",
@@ -92,7 +94,7 @@ export const commercialBanks20261011: Episode = {
     },
     {
       type: "news",
-      seconds: 34,
+      seconds: 24.7,
       category: "BANKING",
       location: "GROUP 1",
       headline: "State-owned commercial banks",
@@ -118,7 +120,7 @@ export const commercialBanks20261011: Episode = {
     },
     {
       type: "news",
-      seconds: 24,
+      seconds: 18.4,
       category: "BANKING",
       location: "GROUP 2",
       headline: "Private joint-stock commercial banks",
@@ -141,7 +143,7 @@ export const commercialBanks20261011: Episode = {
     },
     {
       type: "news",
-      seconds: 36,
+      seconds: 27.9,
       category: "BANKING",
       location: "GROUP 3",
       headline: "Joint-venture banks",
@@ -165,7 +167,7 @@ export const commercialBanks20261011: Episode = {
     },
     {
       type: "news",
-      seconds: 36,
+      seconds: 25.4,
       category: "BANKING",
       location: "GROUP 4",
       headline: "Wholly foreign-owned banks",
@@ -194,7 +196,7 @@ export const commercialBanks20261011: Episode = {
     },
     {
       type: "news",
-      seconds: 16,
+      seconds: 10.5,
       category: "BANKING",
       location: "VIETNAM",
       headline: "Who owns Vietnam's banks?",
@@ -207,7 +209,7 @@ export const commercialBanks20261011: Episode = {
     },
     {
       type: "card",
-      seconds: 14,
+      seconds: 12.5,
       category: "THE ECONOMIC ENGLISH BRIEF",
       location: "SEE YOU",
       headline: "Thanks for watching",
@@ -219,9 +221,9 @@ export const commercialBanks20261011: Episode = {
       },
       art: { icon: "graduationCap", satellites: ["bookOpen", "newspaper", "sparkles"] },
       lines: [
-        { text: "That's all for today's **Economic English Brief**.", size: "md" },
-        { text: "Understand the news. Learn the language.", size: "md", accent: true },
-        { text: "Thanks for watching, and see you in the next update.", size: "sm" },
+        { text: "That's all for today's **Economic English Brief**.", size: "md", at: 0.4 },
+        { text: "Understand the news. Learn the language.", size: "md", accent: true, at: 4.4 },
+        { text: "Thanks for watching, and see you in the next update.", size: "sm", at: 7.3 },
       ],
     },
   ],
