@@ -45,10 +45,15 @@ const PanelArea: React.FC<{ durationInFrames: number; children: React.ReactNode;
 /** Stress marks (ˈ ˌ) allow a line break before them; glue them to the preceding letter. */
 const keepIpaWords = (ipa: string) => ipa.replace(/(\S)([ˈˌ])/g, "$1\u2060$2");
 
-const Vocab: React.FC<{ item: VocabItem; delay: number; compact: boolean }> = ({ item, delay, compact }) => {
+/** Vocabulary density: 0 normal, 1 for long entries, 2 for many entries. */
+type Density = 0 | 1 | 2;
+const VOCAB_SIZE = [31, 28, 24] as const;
+const VOCAB_GAP = [34, 28, 14] as const;
+
+const Vocab: React.FC<{ item: VocabItem; delay: number; density: Density }> = ({ item, delay, density }) => {
   const frame = useCurrentFrame();
   const p = progress(frame, delay, 16);
-  const size = compact ? 28 : 31;
+  const size = VOCAB_SIZE[density];
   return (
     <div style={{ opacity: p, transform: `translateX(${(1 - p) * 30}px)` }}>
       <div style={{ fontFamily: FONT_IPA, fontStyle: "italic", fontWeight: 600, fontSize: size + 2, color: COLORS.vocab }}>
@@ -69,7 +74,7 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
   const frame = useCurrentFrame();
   const divider = progress(frame, 6, 24);
   const vocabChars = scene.vocab.reduce((n, v) => n + v.word.length + (v.ipa ?? "").length + v.meaning.length, 0);
-  const compact = vocabChars > 150;
+  const density: Density = scene.vocab.length > 5 ? 2 : vocabChars > 150 ? 1 : 0;
   // Fit the bilingual text to the panel: shrink long scenes, enlarge short ones a little.
   // Each heading also costs a partly empty line, hence the extra 60 characters.
   const headingChars = (t?: string) => (t ? t.length + 60 : 0);
@@ -77,7 +82,9 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
     scene.english.length +
     scene.vietnamese.length +
     headingChars(scene.englishTitle) +
-    headingChars(scene.vietnameseTitle);
+    headingChars(scene.vietnameseTitle) +
+    // A line break leaves the rest of its line empty.
+    (scene.english + scene.vietnamese).split("\n").length * 40 - 80;
   const scale = Math.min(1.1, Math.max(0.75, Math.sqrt(520 / textChars)));
 
   return (
@@ -89,6 +96,7 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
           left: PADDING_X,
           width: DIVIDER_X - PADDING_X - 28,
           fontFamily: FONT_BODY,
+          whiteSpace: "pre-line",
         }}
       >
         <div style={{ ...fadeUp(frame, 8, 18), fontWeight: 700, fontSize: 37 * scale, lineHeight: 1.36, color: COLORS.white }}>
@@ -110,7 +118,7 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
           {scene.vietnameseTitle ? (
             <div style={{ color: COLORS.white, fontWeight: 700, marginBottom: 10 * scale }}>{scene.vietnameseTitle}</div>
           ) : null}
-          {scene.vietnamese}
+          <RichText text={scene.vietnamese} variant="bold" />
         </div>
       </div>
       <div
@@ -131,11 +139,11 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
           right: 24,
           display: "flex",
           flexDirection: "column",
-          gap: compact ? 28 : 34,
+          gap: VOCAB_GAP[density],
         }}
       >
         {scene.vocab.map((item, i) => (
-          <Vocab key={item.word} item={item} delay={20 + i * 8} compact={compact} />
+          <Vocab key={item.word} item={item} delay={20 + i * 8} density={density} />
         ))}
       </div>
     </PanelArea>

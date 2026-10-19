@@ -23,6 +23,7 @@ import {
   Sparkles,
   TrendingDown,
   TrendingUp,
+  User,
   Users,
   Banknote,
 } from "lucide-react";
@@ -53,6 +54,7 @@ export const ICONS = {
   sparkles: Sparkles,
   trendingDown: TrendingDown,
   trendingUp: TrendingUp,
+  user: User,
   users: Users,
 } satisfies Record<string, LucideIcon>;
 

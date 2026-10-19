@@ -25,7 +25,22 @@ export type ScreenVisual =
   | { type: "stats"; stats: Stat[] }
   | { type: "points"; label: string; points: string[]; /** Shown instead of the numbers. */ icons?: IconName[] }
   | { type: "title"; kicker: string; title: string; subtitle?: string; direction?: "up" | "down" }
-  | { type: "chips"; kicker: string; title: string; chips: { name: string; note?: string }[] };
+  | {
+      type: "chips";
+      kicker: string;
+      title: string;
+      /** `at`: seconds into the scene when the chip appears. */
+      chips: { name: string; note?: string; at?: number }[];
+    }
+  | {
+      /** Nodes left to right joined by arrows, e.g. who pays whom. */
+      type: "flow";
+      kicker: string;
+      title: string;
+      nodes: { label: string; note?: string; icon: IconName; at?: number }[];
+      /** Label under each arrow; arrows.length === nodes.length - 1. */
+      arrows: string[];
+    };
 
 /** Illustration at the top right of the news screen: an animated icon, or a photo in /public. */
 export type SceneArt = { icon: IconName; satellites?: IconName[] } | { image: string };
@@ -43,7 +58,10 @@ type SceneBase = {
   art?: SceneArt;
 };
 
-/** Text with **double asterisks** marks highlighted words. */
+/**
+ * Text with **double asterisks** marks highlighted words (bold in the Vietnamese).
+ * A newline starts a new line.
+ */
 export type NewsScene = SceneBase & {
   type: "news";
   /** Optional bold heading lines shown above each paragraph. */

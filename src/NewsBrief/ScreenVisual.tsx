@@ -159,7 +159,7 @@ const Title: React.FC<{
 const Chips: React.FC<{
   kicker: string;
   title: string;
-  chips: { name: string; note?: string }[];
+  chips: { name: string; note?: string; at?: number }[];
   from: number;
   narrow: boolean;
 }> = ({ kicker, title, chips, from, narrow }) => {
@@ -195,7 +195,8 @@ const Chips: React.FC<{
       </div>
       <div style={{ marginTop: 18, display: "flex", flexWrap: "wrap", gap: 14 }}>
         {chips.map((chip, i) => {
-          const p = progress(frame, from + 16 + i * 8, 14);
+          const start = chip.at !== undefined ? Math.round(chip.at * VIDEO.fps) : from + 16 + i * 8;
+          const p = progress(frame, start, 14);
           return (
             <div
               key={chip.name}
@@ -223,6 +224,137 @@ const Chips: React.FC<{
   );
 };
 
+const FLOW_NODE = 220;
+const FLOW_CIRCLE = 108;
+
+const Flow: React.FC<{
+  kicker: string;
+  title: string;
+  nodes: { label: string; note?: string; icon: IconName; at?: number }[];
+  arrows: string[];
+  from: number;
+}> = ({ kicker, title, nodes, arrows, from }) => {
+  const frame = useCurrentFrame();
+  const starts = nodes.map((node, i) =>
+    node.at !== undefined ? Math.round(node.at * VIDEO.fps) : from + 14 + i * 16,
+  );
+  const gap = (1080 - 120 - nodes.length * FLOW_NODE) / Math.max(nodes.length - 1, 1);
+
+  return (
+    <div style={{ position: "absolute", left: 60, right: 60, top: 104 }}>
+      <div style={fadeUp(frame, from, 14)}>
+        <Chip>{kicker}</Chip>
+      </div>
+      <div
+        style={{
+          ...fadeUp(frame, from + 4, 16),
+          marginTop: 10,
+          fontFamily: FONT_DISPLAY,
+          fontWeight: 900,
+          fontSize: fitTitle(title, 960, 64),
+          whiteSpace: "nowrap",
+          color: COLORS.white,
+          textShadow: "0 6px 24px rgba(0,0,0,0.45)",
+        }}
+      >
+        {title}
+      </div>
+      <div style={{ position: "relative", marginTop: 20, height: 200 }}>
+        {arrows.map((label, i) => {
+          // An arrow draws once both of its ends are on screen.
+          const start = Math.max(starts[i], starts[i + 1]) + 6;
+          const draw = progress(frame, start, 18);
+          const x1 = (i + 1) * FLOW_NODE + i * gap - 50;
+          const width = gap + 100 - 2 * 24;
+          return (
+            <div key={label} style={{ position: "absolute", left: x1 + 24, top: FLOW_CIRCLE / 2 - 14, width }}>
+              <svg width={width} height={28} style={{ overflow: "visible" }}>
+                <line
+                  x1={0}
+                  y1={14}
+                  x2={(width - 16) * draw}
+                  y2={14}
+                  stroke={COLORS.gold}
+                  strokeWidth={6}
+                  strokeLinecap="round"
+                />
+                {draw > 0.95 ? <polygon points={`${width - 20},2 ${width},14 ${width - 20},26`} fill={COLORS.gold} /> : null}
+              </svg>
+              <div
+                style={{
+                  marginTop: 6,
+                  textAlign: "center",
+                  opacity: draw,
+                  fontFamily: FONT_DISPLAY,
+                  fontWeight: 700,
+                  fontSize: 21,
+                  lineHeight: 1.2,
+                  color: COLORS.gold,
+                }}
+              >
+                {label}
+              </div>
+            </div>
+          );
+        })}
+        {nodes.map((node, i) => {
+          const Icon = ICONS[node.icon];
+          const p = progress(frame, starts[i], 16);
+          return (
+            <div
+              key={node.label}
+              style={{
+                position: "absolute",
+                left: i * (FLOW_NODE + gap),
+                top: 0,
+                width: FLOW_NODE,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                opacity: p,
+                transform: `scale(${0.7 + 0.3 * p})`,
+              }}
+            >
+              <div
+                style={{
+                  width: FLOW_CIRCLE,
+                  height: FLOW_CIRCLE,
+                  borderRadius: "50%",
+                  background: `radial-gradient(circle at 35% 30%, #2c6db3 0%, ${COLORS.navyDark} 70%)`,
+                  border: `5px solid ${COLORS.gold}`,
+                  boxShadow: "0 0 28px rgba(245,196,0,0.3)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Icon size={54} color={COLORS.white} strokeWidth={1.8} />
+              </div>
+              <div
+                style={{
+                  marginTop: 10,
+                  fontFamily: FONT_DISPLAY,
+                  fontWeight: 800,
+                  fontSize: 30,
+                  color: COLORS.white,
+                  textShadow: "0 4px 14px rgba(0,0,0,0.5)",
+                }}
+              >
+                {node.label}
+              </div>
+              {node.note ? (
+                <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 20, color: COLORS.textSoft }}>
+                  {node.note}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 export const ScreenVisualView: React.FC<{
   visual: ScreenVisual;
   from: number;
@@ -235,6 +367,9 @@ export const ScreenVisualView: React.FC<{
   }
   if (visual.type === "chips") {
     return <Chips {...visual} from={from} narrow={narrow} />;
+  }
+  if (visual.type === "flow") {
+    return <Flow {...visual} from={from} />;
   }
   if (visual.type === "title") {
     return <Title {...visual} from={from} narrow={narrow} />;
