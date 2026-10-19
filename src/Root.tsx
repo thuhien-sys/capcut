@@ -3,6 +3,7 @@ import { goldPrices20261003 } from "./episodes/2026-10-03-gold";
 import { gasolinePrices20261008 } from "./episodes/2026-10-08-gasoline";
 import { commercialBanks20261011 } from "./episodes/2026-10-11-banks";
 import { creditExtension20261018 } from "./episodes/2026-10-18-credit";
+import { creditExtensionPart220261019 } from "./episodes/2026-10-19-credit-2";
 import { episodeFrames, NewsBrief } from "./NewsBrief/NewsBrief";
 import { Episode } from "./NewsBrief/types";
 import { VIDEO } from "./theme";
@@ -13,6 +14,7 @@ const EPISODES: Record<string, Episode> = {
   "EP-2026-10-08-gasoline": gasolinePrices20261008,
   "EP-2026-10-11-banks": commercialBanks20261011,
   "EP-2026-10-18-credit": creditExtension20261018,
+  "EP-2026-10-19-credit-2": creditExtensionPart220261019,
 };
 
 export const RemotionRoot: React.FC = () => {

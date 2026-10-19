@@ -85,7 +85,11 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
     headingChars(scene.vietnameseTitle) +
     // A line break leaves the rest of its line empty.
     (scene.english + scene.vietnamese).split("\n").length * 40 - 80;
-  const scale = Math.min(1.1, Math.max(0.75, Math.sqrt(520 / textChars)));
+  // Without vocabulary the text spans the whole panel, so more of it fits per line.
+  const hasVocab = scene.vocab.length > 0;
+  const textWidth = hasVocab ? DIVIDER_X - PADDING_X - 28 : 1080 - 2 * PADDING_X;
+  const widthFactor = (DIVIDER_X - PADDING_X - 28) / textWidth;
+  const scale = Math.min(1.1, Math.max(0.75, Math.sqrt(520 / (textChars * widthFactor))));
 
   return (
     <PanelArea durationInFrames={durationInFrames}>
@@ -94,7 +98,7 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
           position: "absolute",
           top: 40,
           left: PADDING_X,
-          width: DIVIDER_X - PADDING_X - 28,
+          width: textWidth,
           fontFamily: FONT_BODY,
           whiteSpace: "pre-line",
         }}
@@ -121,16 +125,18 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
           <RichText text={scene.vietnamese} variant="bold" />
         </div>
       </div>
-      <div
-        style={{
-          position: "absolute",
-          left: DIVIDER_X,
-          top: 40,
-          width: 3,
-          height: 980 * divider,
-          background: COLORS.divider,
-        }}
-      />
+      {hasVocab ? (
+        <div
+          style={{
+            position: "absolute",
+            left: DIVIDER_X,
+            top: 40,
+            width: 3,
+            height: 980 * divider,
+            background: COLORS.divider,
+          }}
+        />
+      ) : null}
       <div
         style={{
           position: "absolute",
