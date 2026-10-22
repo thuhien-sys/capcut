@@ -1,10 +1,13 @@
 import {
+  ArrowLeftRight,
   BookOpen,
   Briefcase,
   Building2,
   ChartPie,
   CircleHelp,
+  Clock,
   Coins,
+  CreditCard,
   Earth,
   FileText,
   Flag,
@@ -20,22 +23,28 @@ import {
   Percent,
   Scale,
   ShieldCheck,
+  Smartphone,
   Sparkles,
   TrendingDown,
   TrendingUp,
   User,
   Users,
+  Wallet,
+  Zap,
   Banknote,
 } from "lucide-react";
 
 /** Icons available to episodes, by short name. */
 export const ICONS = {
+  arrows: ArrowLeftRight,
   banknote: Banknote,
   bookOpen: BookOpen,
   briefcase: Briefcase,
   building: Building2,
   chartPie: ChartPie,
+  clock: Clock,
   coins: Coins,
+  creditCard: CreditCard,
   earth: Earth,
   fileText: FileText,
   flag: Flag,
@@ -51,11 +60,14 @@ export const ICONS = {
   question: CircleHelp,
   scale: Scale,
   shieldCheck: ShieldCheck,
+  smartphone: Smartphone,
   sparkles: Sparkles,
   trendingDown: TrendingDown,
   trendingUp: TrendingUp,
   user: User,
   users: Users,
+  wallet: Wallet,
+  zap: Zap,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

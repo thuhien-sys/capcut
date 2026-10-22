@@ -45,6 +45,7 @@ const TopBar: React.FC<{ category: string; date: string }> = ({ category, date }
         fontSize: 26,
         letterSpacing: 2,
         color: COLORS.white,
+        whiteSpace: "nowrap",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 16px", background: COLORS.red }}>

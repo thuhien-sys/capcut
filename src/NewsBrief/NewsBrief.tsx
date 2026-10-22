@@ -29,6 +29,7 @@ export const NewsBrief: React.FC<{ episode: Episode }> = ({ episode }) => {
   return (
     <AbsoluteFill style={{ background: COLORS.navy }}>
       {episode.audio ? <Audio src={staticFile(episode.audio)} /> : null}
+      {episode.music ? <Audio src={staticFile(episode.music)} volume={episode.musicVolume ?? 0.1} loop /> : null}
       <ScreenBackground backgroundVideo={episode.backgroundVideo} />
       <Series>
         {episode.scenes.map((scene, i) => {

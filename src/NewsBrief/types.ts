@@ -103,5 +103,9 @@ export type Episode = {
   backgroundVideo?: string;
   /** Optional narration file in /public, played from the first frame. */
   audio?: string;
+  /** Optional background music in /public, mixed under the narration. */
+  music?: string;
+  /** Music volume, 0–1; defaults to 0.1, which sits well below a normal narration. */
+  musicVolume?: number;
   scenes: Scene[];
 };

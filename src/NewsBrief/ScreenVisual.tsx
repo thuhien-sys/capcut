@@ -165,6 +165,8 @@ const Chips: React.FC<{
 }> = ({ kicker, title, chips, from, narrow }) => {
   const frame = useCurrentFrame();
   const t = progress(frame, from + 4, 16);
+  // Many chips: smaller ones so three rows still clear the lower third.
+  const small = narrow || chips.length > 6;
 
   return (
     <div style={{ position: "absolute", left: 60, right: contentRight(narrow), top: 104 }}>
@@ -201,7 +203,7 @@ const Chips: React.FC<{
             <div
               key={chip.name}
               style={{
-                padding: chip.note ? "8px 20px 10px" : "12px 22px",
+                padding: chip.note ? "8px 20px 10px" : small ? "9px 18px" : "12px 22px",
                 background: "rgba(8,22,39,0.82)",
                 borderLeft: `6px solid ${COLORS.gold}`,
                 opacity: p,
@@ -210,9 +212,9 @@ const Chips: React.FC<{
                 fontFamily: FONT_DISPLAY,
               }}
             >
-              <div style={{ fontWeight: 800, fontSize: narrow ? 28 : 34, color: COLORS.white }}>{chip.name}</div>
+              <div style={{ fontWeight: 800, fontSize: small ? 28 : 34, color: COLORS.white }}>{chip.name}</div>
               {chip.note ? (
-                <div style={{ fontWeight: 700, fontSize: narrow ? 18 : 21, color: COLORS.textSoft, marginTop: 2 }}>
+                <div style={{ fontWeight: 700, fontSize: small ? 18 : 21, color: COLORS.textSoft, marginTop: 2 }}>
                   {chip.note}
                 </div>
               ) : null}
