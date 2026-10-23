@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Audio, Series, staticFile } from "remotion";
+import { AbsoluteFill, Audio, Sequence, Series, staticFile } from "remotion";
 import "../fonts";
 import { COLORS, VIDEO } from "../theme";
 import { Header } from "./Header";
@@ -28,10 +28,23 @@ const ScenePanel: React.FC<{ scene: Scene; durationInFrames: number }> = ({ scen
   }
 };
 
+const VoiceSlice: React.FC<{ src: string; voice: NonNullable<Scene["voice"]> }> = ({ src, voice }) => {
+  const fps = VIDEO.fps;
+  return (
+    <Sequence from={Math.round((voice.at ?? 0.3) * fps)}>
+      <Audio
+        src={staticFile(src)}
+        trimBefore={Math.round(voice.from * fps)}
+        durationInFrames={Math.round((voice.to - voice.from) * fps)}
+      />
+    </Sequence>
+  );
+};
+
 export const NewsBrief: React.FC<{ episode: Episode }> = ({ episode }) => {
   return (
     <AbsoluteFill style={{ background: COLORS.navy }}>
-      {episode.audio ? <Audio src={staticFile(episode.audio)} /> : null}
+      {episode.audio && !episode.scenes.some((scene) => scene.voice) ? <Audio src={staticFile(episode.audio)} /> : null}
       {episode.music ? <Audio src={staticFile(episode.music)} volume={episode.musicVolume ?? 0.1} loop /> : null}
       <ScreenBackground backgroundVideo={episode.backgroundVideo} />
       <Series>
@@ -42,6 +55,7 @@ export const NewsBrief: React.FC<{ episode: Episode }> = ({ episode }) => {
               <NewsScreen episode={episode} scene={scene} durationInFrames={frames} />
               <ScenePanel scene={scene} durationInFrames={frames} />
               {scene.type === "quiz" ? <QuizSounds scene={scene} /> : null}
+              {episode.audio && scene.voice ? <VoiceSlice src={episode.audio} voice={scene.voice} /> : null}
             </Series.Sequence>
           );
         })}

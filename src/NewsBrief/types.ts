@@ -61,6 +61,12 @@ type SceneBase = {
   /** Text on the "breaking" opener band; defaults to BREAKING NEWS. */
   openerText?: string;
   art?: SceneArt;
+  /**
+   * Play only this slice of the episode's narration, `from`–`to` seconds into the file,
+   * starting `at` seconds into the scene. When any scene has one, the narration is no
+   * longer played straight through.
+   */
+  voice?: { from: number; to: number; at?: number };
 };
 
 /**
