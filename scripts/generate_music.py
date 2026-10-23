@@ -90,6 +90,14 @@ def lowpass(x: np.ndarray, cutoff: float) -> np.ndarray:
     return lfilter([alpha], [1, alpha - 1], x)
 
 
+def mix(buf: np.ndarray, start: int, sig: np.ndarray, gain: float = 1.0) -> None:
+    """Add `sig` into `buf` at `start`, dropping whatever falls past the end."""
+    if start >= len(buf):
+        return
+    end = min(len(buf), start + len(sig))
+    buf[start:end] += gain * sig[: end - start]
+
+
 def main(path: str, seconds: float) -> None:
     rng = np.random.default_rng(7)
     total = int((seconds + 4) * SR)
@@ -101,16 +109,14 @@ def main(path: str, seconds: float) -> None:
         start = int(t0 * SR)
 
         p = pad(tones, chord_len + 1.8)
-        end = min(total, start + len(p))
-        left[start:end] += 0.5 * p[: end - start]
-        right[start:end] += 0.5 * p[: end - start]
+        mix(left, start, p, 0.5)
+        mix(right, start, p, 0.5)
 
         for bar in range(BARS_PER_CHORD):
             b = bass_note(bass, BAR)
             s = start + int(bar * BAR * SR)
-            e = min(total, s + len(b))
-            left[s:e] += 0.35 * b[: e - s]
-            right[s:e] += 0.35 * b[: e - s]
+            mix(left, s, b, 0.35)
+            mix(right, s, b, 0.35)
 
         # Gentle arpeggio on eighth notes, alternating up and down, a few notes skipped.
         pattern = tones + tones[-2:0:-1]
@@ -119,11 +125,10 @@ def main(path: str, seconds: float) -> None:
                 continue
             note = piano_note(pattern[k % len(pattern)] + 12, 2.5)
             s = start + int(k * BEAT / 2 * SR)
-            e = min(total, s + len(note))
             pan = 0.5 + 0.3 * np.sin(k * 0.9)
             vel = 0.16 * (0.75 + 0.25 * rng.random())
-            left[s:e] += vel * (1 - pan) * note[: e - s]
-            right[s:e] += vel * pan * note[: e - s]
+            mix(left, s, note, vel * (1 - pan))
+            mix(right, s, note, vel * pan)
 
         t0 += chord_len
         i += 1

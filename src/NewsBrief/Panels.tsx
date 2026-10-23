@@ -4,6 +4,7 @@ import { FONT_BODY, FONT_DISPLAY, FONT_IPA } from "../fonts";
 import { COLORS, LAYOUT, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
 import { RichText } from "./RichText";
+import { useFitScale } from "./useFitScale";
 import { CardScene, NewsScene, PatternScene, VerbListScene, VocabItem } from "./types";
 
 const PADDING_X = 44;
@@ -75,21 +76,12 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
   const divider = progress(frame, 6, 24);
   const vocabChars = scene.vocab.reduce((n, v) => n + v.word.length + (v.ipa ?? "").length + v.meaning.length, 0);
   const density: Density = scene.vocab.length > 5 ? 2 : vocabChars > 150 ? 1 : 0;
-  // Fit the bilingual text to the panel: shrink long scenes, enlarge short ones a little.
-  // Each heading also costs a partly empty line, hence the extra 60 characters.
-  const headingChars = (t?: string) => (t ? t.length + 60 : 0);
-  const textChars =
-    scene.english.length +
-    scene.vietnamese.length +
-    headingChars(scene.englishTitle) +
-    headingChars(scene.vietnameseTitle) +
-    // A line break leaves the rest of its line empty.
-    (scene.english + scene.vietnamese).split("\n").length * 40 - 80;
-  // Without vocabulary the text spans the whole panel, so more of it fits per line.
+  // Without vocabulary the text spans the whole panel.
   const hasVocab = scene.vocab.length > 0;
   const textWidth = hasVocab ? DIVIDER_X - PADDING_X - 28 : 1080 - 2 * PADDING_X;
-  const widthFactor = (DIVIDER_X - PADDING_X - 28) / textWidth;
-  const scale = Math.min(1.1, Math.max(0.75, Math.sqrt(520 / (textChars * widthFactor))));
+  // Size the bilingual text to fill the panel, leaving the bottom clear of TikTok's caption.
+  const fit = useFitScale(880);
+  const px = (n: number) => `calc(${n}px * var(--fit))`;
 
   return (
     <PanelArea durationInFrames={durationInFrames}>
@@ -101,26 +93,28 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
           width: textWidth,
           fontFamily: FONT_BODY,
           whiteSpace: "pre-line",
+          ...fit.style,
         }}
+        ref={fit.ref}
       >
-        <div style={{ ...fadeUp(frame, 8, 18), fontWeight: 700, fontSize: 37 * scale, lineHeight: 1.36, color: COLORS.white }}>
+        <div style={{ ...fadeUp(frame, 8, 18), fontWeight: 700, fontSize: px(37), lineHeight: 1.36, color: COLORS.white }}>
           {scene.englishTitle ? (
-            <div style={{ color: COLORS.gold, fontWeight: 800, marginBottom: 12 * scale }}>{scene.englishTitle}</div>
+            <div style={{ color: COLORS.gold, fontWeight: 800, marginBottom: px(12) }}>{scene.englishTitle}</div>
           ) : null}
           <RichText text={scene.english} highlightStart={26} />
         </div>
         <div
           style={{
             ...fadeUp(frame, 40, 18),
-            marginTop: 46 * scale,
+            marginTop: px(46),
             fontWeight: 400,
-            fontSize: 33 * scale,
+            fontSize: px(33),
             lineHeight: 1.42,
             color: COLORS.textSoft,
           }}
         >
           {scene.vietnameseTitle ? (
-            <div style={{ color: COLORS.white, fontWeight: 700, marginBottom: 10 * scale }}>{scene.vietnameseTitle}</div>
+            <div style={{ color: COLORS.white, fontWeight: 700, marginBottom: px(10) }}>{scene.vietnameseTitle}</div>
           ) : null}
           <RichText text={scene.vietnamese} variant="bold" />
         </div>

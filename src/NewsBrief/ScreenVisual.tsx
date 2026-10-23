@@ -226,6 +226,96 @@ const Chips: React.FC<{
   );
 };
 
+/** Frames at which each timed item appears; untimed items share the scene evenly. */
+const scheduleItems = (items: { at?: number }[], from: number, durationInFrames: number) => {
+  const span = (durationInFrames - from) / Math.max(items.length, 1);
+  return items.map((item, i) =>
+    item.at !== undefined ? Math.max(from, Math.round(item.at * VIDEO.fps)) : Math.round(from + i * span),
+  );
+};
+
+const NumberCard: React.FC<{
+  item: { label: string; digits: string; highlight: number; note?: string };
+  from: number;
+  to: number;
+}> = ({ item, from, to }) => {
+  const frame = useCurrentFrame();
+  if (frame < from || frame > to) return null;
+  const enter = progress(frame, from, 14);
+  const exit = progress(frame, to - 12, 12);
+  const typed = progress(frame, from + 4, 16);
+  const pop = progress(frame, from + 20, 12);
+
+  const total = item.digits.replace(/\s/g, "").length;
+  let seen = 0;
+  const shown = Math.ceil(typed * total);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: 60,
+        right: 60,
+        top: 100,
+        opacity: enter * (1 - exit),
+        transform: `translateX(${(1 - enter) * -80 + exit * 80}px)`,
+      }}
+    >
+      <Chip>{item.label}</Chip>
+      <div
+        style={{
+          marginTop: 18,
+          padding: "22px 30px",
+          borderRadius: 22,
+          background: "linear-gradient(135deg, rgba(44,109,179,0.55), rgba(8,22,39,0.85))",
+          border: "2px solid rgba(255,255,255,0.18)",
+          boxShadow: "0 14px 40px rgba(0,0,0,0.45)",
+          fontFamily: FONT_DISPLAY,
+          fontWeight: 900,
+          fontSize: 84,
+          letterSpacing: 4,
+          whiteSpace: "nowrap",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        {item.digits.split("").map((ch, i) => {
+          if (/\s/.test(ch)) return <span key={i}> </span>;
+          const index = seen++;
+          const highlighted = index >= total - item.highlight;
+          return (
+            <span
+              key={i}
+              style={{
+                display: "inline-block",
+                opacity: index < shown ? 1 : 0,
+                color: highlighted ? COLORS.gold : "rgba(255,255,255,0.72)",
+                transform: highlighted ? `scale(${1 + 0.18 * Math.sin(pop * Math.PI)})` : undefined,
+                textShadow: highlighted ? `0 0 ${24 * pop}px rgba(245,196,0,0.7)` : undefined,
+              }}
+            >
+              {ch}
+            </span>
+          );
+        })}
+      </div>
+      {item.note ? (
+        <div
+          style={{
+            ...fadeUp(frame, from + 22, 12),
+            marginTop: 16,
+            color: COLORS.textSoft,
+            fontFamily: FONT_DISPLAY,
+            fontWeight: 700,
+            fontSize: 30,
+          }}
+        >
+          {item.note}
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
 const FLOW_NODE = 220;
 const FLOW_CIRCLE = 108;
 
@@ -373,15 +463,27 @@ export const ScreenVisualView: React.FC<{
   if (visual.type === "flow") {
     return <Flow {...visual} from={from} />;
   }
+  if (visual.type === "numbers") {
+    const starts = scheduleItems(visual.items, from, durationInFrames);
+    return (
+      <>
+        {visual.items.map((item, i) => (
+          <NumberCard
+            key={item.label + item.digits}
+            item={item}
+            from={starts[i]}
+            to={i === visual.items.length - 1 ? durationInFrames + 30 : starts[i + 1]}
+          />
+        ))}
+      </>
+    );
+  }
   if (visual.type === "title") {
     return <Title {...visual} from={from} narrow={narrow} />;
   }
 
   // Stats with `at` appear when they are read out; the rest share the scene evenly.
-  const span = (durationInFrames - from) / Math.max(visual.stats.length, 1);
-  const starts = visual.stats.map((stat, i) =>
-    stat.at !== undefined ? Math.max(from, Math.round(stat.at * VIDEO.fps)) : Math.round(from + i * span),
-  );
+  const starts = scheduleItems(visual.stats, from, durationInFrames);
   return (
     <>
       {visual.stats.map((stat, i) => {

@@ -33,6 +33,11 @@ export type ScreenVisual =
       chips: { name: string; note?: string; at?: number }[];
     }
   | {
+      /** Sample account numbers, one at a time, with their last `highlight` digits in gold. */
+      type: "numbers";
+      items: { label: string; digits: string; highlight: number; note?: string; at?: number }[];
+    }
+  | {
       /** Nodes left to right joined by arrows, e.g. who pays whom. */
       type: "flow";
       kicker: string;
