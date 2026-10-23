@@ -4,6 +4,7 @@ import { FONT_DISPLAY } from "../fonts";
 import { COLORS, LAYOUT } from "../theme";
 import { fadeUp, progress } from "./anim";
 import { NewsBackground } from "./NewsBackground";
+import { QuizVisual } from "./Quiz";
 import { SceneArtView } from "./SceneArt";
 import { ScreenVisualView } from "./ScreenVisual";
 import { Episode, Scene } from "./types";
@@ -284,13 +285,19 @@ export const NewsScreen: React.FC<{ episode: Episode; scene: Scene; durationInFr
 
   return (
     <ScreenArea>
-      {scene.art ? <SceneArtView art={scene.art} from={contentStart} /> : null}
-      <ScreenVisualView
-        visual={scene.visual}
-        from={contentStart}
-        durationInFrames={durationInFrames}
-        narrow={Boolean(scene.art)}
-      />
+      {scene.type === "quiz" ? (
+        <QuizVisual scene={scene} from={contentStart} />
+      ) : (
+        <>
+          {scene.art ? <SceneArtView art={scene.art} from={contentStart} /> : null}
+          <ScreenVisualView
+            visual={scene.visual}
+            from={contentStart}
+            durationInFrames={durationInFrames}
+            narrow={Boolean(scene.art)}
+          />
+        </>
+      )}
       {opener === "breaking" ? (
         <BreakingOpener headline={scene.headline} text={scene.openerText ?? "BREAKING NEWS"} />
       ) : null}

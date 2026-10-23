@@ -22,6 +22,8 @@ export const useFitScale = (maxHeight: number, min = 0.6, max = 1.15) => {
     document.fonts.ready.then(() => {
       const el = ref.current;
       if (done || !el) return finish();
+      // Measure by trying scales on the element, then hand the result back to React.
+      const before = el.style.getPropertyValue("--fit");
       let lo = min;
       let hi = max;
       for (let i = 0; i < 12; i++) {
@@ -30,12 +32,12 @@ export const useFitScale = (maxHeight: number, min = 0.6, max = 1.15) => {
         if (el.offsetHeight <= maxHeight) lo = mid;
         else hi = mid;
       }
-      el.style.setProperty("--fit", String(lo));
+      el.style.setProperty("--fit", before);
       setScale(lo);
       finish();
     });
     return finish;
   }, [handle, maxHeight, min, max]);
 
-  return { ref, style: { "--fit": scale } as React.CSSProperties };
+  return { ref, scale, style: { "--fit": scale } as React.CSSProperties };
 };

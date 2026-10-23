@@ -97,7 +97,24 @@ export type CardScene = SceneBase & {
   lines: { text: string; size?: "lg" | "md" | "sm"; accent?: boolean; soft?: boolean; at?: number }[];
 };
 
-export type Scene = NewsScene | VerbListScene | PatternScene | CardScene;
+/**
+ * Fill-in-the-blank question: blanks are written [[answer]] in `question`. The answers,
+ * the Vietnamese and the vocabulary stay hidden until the reveal, after a countdown.
+ */
+export type QuizScene = Omit<SceneBase, "visual"> & {
+  type: "quiz";
+  number: number;
+  total: number;
+  question: string;
+  vietnamese: string;
+  vocab: VocabItem[];
+  /** Seconds into the scene when the countdown starts. */
+  countdownAt: number;
+  /** Seconds into the scene when the answers appear; defaults to 5 seconds after the countdown starts. */
+  revealAt?: number;
+};
+
+export type Scene = NewsScene | VerbListScene | PatternScene | CardScene | QuizScene;
 
 export type Episode = {
   channel: string;

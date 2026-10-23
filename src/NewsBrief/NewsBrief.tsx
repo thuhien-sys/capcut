@@ -4,7 +4,8 @@ import "../fonts";
 import { COLORS, VIDEO } from "../theme";
 import { Header } from "./Header";
 import { NewsScreen, ScreenBackground, Ticker } from "./NewsScreen";
-import { CardPanel, NewsPanel, PatternPanel, VerbListPanel } from "./Panels";
+import { CardPanel, NewsPanel, PatternPanel, QuizPanel, VerbListPanel } from "./Panels";
+import { QuizSounds } from "./Quiz";
 import { Episode, Scene } from "./types";
 
 export const sceneFrames = (scene: Scene) => Math.round(scene.seconds * VIDEO.fps);
@@ -22,6 +23,8 @@ const ScenePanel: React.FC<{ scene: Scene; durationInFrames: number }> = ({ scen
       return <PatternPanel scene={scene} durationInFrames={durationInFrames} />;
     case "card":
       return <CardPanel scene={scene} durationInFrames={durationInFrames} />;
+    case "quiz":
+      return <QuizPanel scene={scene} durationInFrames={durationInFrames} />;
   }
 };
 
@@ -38,6 +41,7 @@ export const NewsBrief: React.FC<{ episode: Episode }> = ({ episode }) => {
             <Series.Sequence key={i} durationInFrames={frames}>
               <NewsScreen episode={episode} scene={scene} durationInFrames={frames} />
               <ScenePanel scene={scene} durationInFrames={frames} />
+              {scene.type === "quiz" ? <QuizSounds scene={scene} /> : null}
             </Series.Sequence>
           );
         })}

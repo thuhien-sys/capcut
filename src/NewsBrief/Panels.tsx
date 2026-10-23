@@ -1,11 +1,12 @@
 import React from "react";
-import { useCurrentFrame } from "remotion";
+import { interpolate, useCurrentFrame } from "remotion";
 import { FONT_BODY, FONT_DISPLAY, FONT_IPA } from "../fonts";
 import { COLORS, LAYOUT, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
 import { RichText } from "./RichText";
 import { useFitScale } from "./useFitScale";
-import { CardScene, NewsScene, PatternScene, VerbListScene, VocabItem } from "./types";
+import { QuizText, quizFrames } from "./Quiz";
+import { CardScene, NewsScene, PatternScene, QuizScene, VerbListScene, VocabItem } from "./types";
 
 const PADDING_X = 44;
 const DIVIDER_X = 712;
@@ -144,6 +145,87 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
       >
         {scene.vocab.map((item, i) => (
           <Vocab key={item.word} item={item} delay={20 + i * 8} density={density} />
+        ))}
+      </div>
+    </PanelArea>
+  );
+};
+
+/** Bottom panel of a quiz: the question with blanks; translation and vocabulary after the reveal. */
+export const QuizPanel: React.FC<{ scene: QuizScene; durationInFrames: number }> = ({ scene, durationInFrames }) => {
+  const frame = useCurrentFrame();
+  const { reveal } = quizFrames(scene);
+  const after = progress(frame, reveal + 12, 18);
+  const vocabChars = scene.vocab.reduce((n, v) => n + v.word.length + (v.ipa ?? "").length + v.meaning.length, 0);
+  const density: Density = scene.vocab.length > 5 ? 2 : vocabChars > 150 ? 1 : 0;
+  // While viewers guess, the question alone fills the panel; at the reveal it shrinks
+  // to make room for the translation.
+  const fitQuestion = useFitScale(880, 0.6, 1.5);
+  const fitAll = useFitScale(880);
+  const fitNow = interpolate(frame, [reveal, reveal + 15], [fitQuestion.scale, fitAll.scale], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const px = (n: number) => `calc(${n}px * var(--fit))`;
+  const column: React.CSSProperties = {
+    position: "absolute",
+    top: 40,
+    left: PADDING_X,
+    width: DIVIDER_X - PADDING_X - 28,
+    fontFamily: FONT_BODY,
+  };
+  const questionStyle: React.CSSProperties = { fontWeight: 700, fontSize: px(37), lineHeight: 1.5, color: COLORS.white };
+
+  return (
+    <PanelArea durationInFrames={durationInFrames}>
+      {/* Invisible copy of the question alone, measured for the guessing phase. */}
+      <div ref={fitQuestion.ref} aria-hidden style={{ ...column, ...fitQuestion.style, visibility: "hidden" }}>
+        <div style={questionStyle}>
+          <QuizText question={scene.question} reveal={Number.MAX_SAFE_INTEGER} />
+        </div>
+      </div>
+      <div ref={fitAll.ref} style={{ ...column, ...({ "--fit": fitNow } as React.CSSProperties) }}>
+        <div style={{ ...fadeUp(frame, 8, 18), ...questionStyle }}>
+          <QuizText question={scene.question} reveal={reveal} />
+        </div>
+        {/* Laid out from the start so the fit accounts for it; shown only after the reveal. */}
+        <div
+          style={{
+            opacity: after,
+            transform: `translateY(${(1 - after) * 20}px)`,
+            marginTop: px(40),
+            fontWeight: 400,
+            fontSize: px(33),
+            lineHeight: 1.42,
+            color: COLORS.textSoft,
+          }}
+        >
+          <RichText text={scene.vietnamese} variant="bold" />
+        </div>
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: DIVIDER_X,
+          top: 40,
+          width: 3,
+          height: 980 * progress(frame, 6, 24),
+          background: COLORS.divider,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          top: 44,
+          left: DIVIDER_X + 30,
+          right: 24,
+          display: "flex",
+          flexDirection: "column",
+          gap: VOCAB_GAP[density],
+        }}
+      >
+        {scene.vocab.map((item, i) => (
+          <Vocab key={item.word} item={item} delay={reveal + 18 + i * 8} density={density} />
         ))}
       </div>
     </PanelArea>
