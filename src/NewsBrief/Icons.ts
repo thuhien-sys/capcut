@@ -7,6 +7,7 @@ import {
   CircleCheck,
   CircleHelp,
   Clock,
+  Coffee,
   Coins,
   CreditCard,
   Earth,
@@ -27,6 +28,7 @@ import {
   Smartphone,
   Sparkles,
   TrendingDown,
+  TriangleAlert,
   TrendingUp,
   User,
   Users,
@@ -37,6 +39,7 @@ import {
 
 /** Icons available to episodes, by short name. */
 export const ICONS = {
+  alert: TriangleAlert,
   arrows: ArrowLeftRight,
   banknote: Banknote,
   bookOpen: BookOpen,
@@ -45,6 +48,7 @@ export const ICONS = {
   chartPie: ChartPie,
   check: CircleCheck,
   clock: Clock,
+  coffee: Coffee,
   coins: Coins,
   creditCard: CreditCard,
   earth: Earth,

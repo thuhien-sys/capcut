@@ -422,12 +422,14 @@ const Flow: React.FC<{
               >
                 <Icon size={54} color={COLORS.white} strokeWidth={1.8} />
               </div>
+              {/* Labels stay on one line, shrinking to fit, so they never spill into the lower third. */}
               <div
                 style={{
                   marginTop: 10,
                   fontFamily: FONT_DISPLAY,
                   fontWeight: 800,
-                  fontSize: 30,
+                  fontSize: Math.min(30, Math.floor((FLOW_NODE + 20) / (node.label.length * 0.66))),
+                  whiteSpace: "nowrap",
                   color: COLORS.white,
                   textShadow: "0 4px 14px rgba(0,0,0,0.5)",
                 }}
@@ -435,7 +437,15 @@ const Flow: React.FC<{
                 {node.label}
               </div>
               {node.note ? (
-                <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 20, color: COLORS.textSoft }}>
+                <div
+                  style={{
+                    fontFamily: FONT_DISPLAY,
+                    fontWeight: 700,
+                    fontSize: Math.min(20, Math.floor((FLOW_NODE + 30) / (node.note.length * 0.58))),
+                    whiteSpace: "nowrap",
+                    color: COLORS.textSoft,
+                  }}
+                >
                   {node.note}
                 </div>
               ) : null}

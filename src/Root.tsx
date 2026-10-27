@@ -7,6 +7,7 @@ import { creditExtensionPart220261019 } from "./episodes/2026-10-19-credit-2";
 import { a2aPayments20261020 } from "./episodes/2026-10-20-a2a";
 import { currentAccount20261022 } from "./episodes/2026-10-22-current-account";
 import { weeklyQuiz20261023 } from "./episodes/2026-10-23-weekly-quiz";
+import { creditVsDebit20261025 } from "./episodes/2026-10-25-cards";
 import { episodeFrames, NewsBrief } from "./NewsBrief/NewsBrief";
 import { Episode } from "./NewsBrief/types";
 import { VIDEO } from "./theme";
@@ -21,6 +22,7 @@ const EPISODES: Record<string, Episode> = {
   "EP-2026-10-20-a2a": a2aPayments20261020,
   "EP-2026-10-22-current-account": currentAccount20261022,
   "EP-2026-10-23-weekly-quiz": weeklyQuiz20261023,
+  "EP-2026-10-25-cards": creditVsDebit20261025,
 };
 
 export const RemotionRoot: React.FC = () => {
