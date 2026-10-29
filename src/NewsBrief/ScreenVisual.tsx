@@ -1,9 +1,10 @@
 import React from "react";
-import { useCurrentFrame } from "remotion";
+import { Img, staticFile, useCurrentFrame } from "remotion";
 import { FONT_DISPLAY } from "../fonts";
 import { COLORS, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
 import { ICONS, IconName } from "./Icons";
+import { DashboardVisual } from "./Mockups";
 import { ART_SIZE } from "./SceneArt";
 import { StatCard } from "./StatCard";
 import { ScreenVisual } from "./types";
@@ -159,10 +160,11 @@ const Title: React.FC<{
 const Chips: React.FC<{
   kicker: string;
   title: string;
+  titleLogo?: string;
   chips: { name: string; note?: string; at?: number }[];
   from: number;
   narrow: boolean;
-}> = ({ kicker, title, chips, from, narrow }) => {
+}> = ({ kicker, title, titleLogo, chips, from, narrow }) => {
   const frame = useCurrentFrame();
   const t = progress(frame, from + 4, 16);
   // Many chips: smaller ones so three rows still clear the lower third.
@@ -191,8 +193,16 @@ const Chips: React.FC<{
           whiteSpace: "nowrap",
           color: COLORS.white,
           textShadow: "0 6px 24px rgba(0,0,0,0.45)",
+          display: "flex",
+          alignItems: "center",
+          gap: 18,
         }}
       >
+        {titleLogo ? (
+          <div style={{ padding: "6px 12px", borderRadius: 12, background: "#fff", display: "flex" }}>
+            <Img src={staticFile(titleLogo)} style={{ height: "0.85em", objectFit: "contain" }} />
+          </div>
+        ) : null}
         {title}
       </div>
       <div style={{ marginTop: 18, display: "flex", flexWrap: "wrap", gap: 14 }}>
@@ -472,6 +482,9 @@ export const ScreenVisualView: React.FC<{
   }
   if (visual.type === "flow") {
     return <Flow {...visual} from={from} />;
+  }
+  if (visual.type === "dashboard") {
+    return <DashboardVisual {...visual} from={from} />;
   }
   if (visual.type === "numbers") {
     const starts = scheduleItems(visual.items, from, durationInFrames);

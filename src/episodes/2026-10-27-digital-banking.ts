@@ -1,5 +1,11 @@
 import { Episode } from "../NewsBrief/types";
 
+// Logos go in /public/logos once supplied; until then the mockups show the names instead.
+const VCB_LOGO: string | undefined = undefined;
+const VTB_LOGO: string | undefined = undefined;
+const VCB_GREEN = "#0b6b3a";
+const VTB_BLUE = "#0a4ea2";
+
 export const digitalBanking20261027: Episode = {
   channel: "THE ECONOMIC ENGLISH BRIEF",
   source: "Explainer",
@@ -25,7 +31,19 @@ export const digitalBanking20261027: Episode = {
       location: "BANKING",
       headline: "Vietcombank vs VietinBank: digital banking ecosystems",
       visual: { type: "title", kicker: "TOP STORY", title: "DIGITAL BANKING", subtitle: "Vietcombank vs VietinBank" },
-      art: { icon: "smartphone", satellites: ["landmark", "creditCard", "zap"] },
+      art: {
+        phone: {
+          app: "Business banking",
+          color: "#1d5fa8",
+          rows: [
+            { label: "Supplier", amount: "Pending" },
+            { label: "Payroll", amount: "Pending" },
+            { label: "Tax payment", amount: "Pending" },
+            { label: "Utilities", amount: "Pending" },
+          ],
+          toast: { text: "Payments waiting for approval", at: 4.5 },
+        },
+      },
       lines: [
         { text: "Hello everyone, and welcome to", size: "sm", at: 0.1 },
         { text: "THE ECONOMIC ENGLISH BRIEF", size: "lg", accent: true, at: 1.5 },
@@ -44,12 +62,26 @@ export const digitalBanking20261027: Episode = {
         type: "chips",
         kicker: "DIGITAL SOLUTIONS",
         title: "VIETCOMBANK",
+        titleLogo: VCB_LOGO,
         chips: [
           { name: "VCB Digibank", note: "Individual customers", at: 5.1 },
           { name: "VCB DigiBiz", note: "Businesses", at: 8.2 },
           { name: "iBanking", note: "Businesses", at: 9.6 },
           { name: "VCB CashUp", note: "Corporate clients", at: 11.1 },
         ],
+      },
+      art: {
+        phone: {
+          app: "VCB Digibank",
+          logo: VCB_LOGO,
+          color: VCB_GREEN,
+          rows: [
+            { label: "Transfer", amount: "-500,000" },
+            { label: "Bill payment", amount: "-320,000" },
+            { label: "Salary", amount: "+15,000,000" },
+          ],
+          toast: { text: "Transfer successful", at: 8 },
+        },
       },
       english:
         "Vietcombank has developed digital solutions for different **customer segments**. VCB Digibank serves **individual customers**, while VCB DigiBiz, iBanking and VCB CashUp provide **digital banking services** for businesses. But one particularly interesting platform is **VCB CashUp**. Designed for **corporate clients**, CashUp helps businesses manage accounts, monitor **cash flow**, and control payments through a **centralized platform**.",
@@ -69,15 +101,16 @@ export const digitalBanking20261027: Episode = {
       location: "VIETCOMBANK",
       headline: "A new web version and 91.4% digital transactions",
       visual: {
-        type: "chips",
+        type: "dashboard",
         kicker: "NOVEMBER 2025",
         title: "NEW WEB VERSION",
-        chips: [
-          { name: "Payment approval", note: "Phê duyệt thanh toán", at: 5.2 },
-          { name: "Tax payments", note: "Nộp thuế", at: 8.6 },
-          { name: "Social insurance", note: "Bảo hiểm xã hội", at: 10 },
-          { name: "91.4% via digital channels", note: "of customer transactions in 2025", at: 12.1 },
+        window: "Vietcombank · new web version",
+        rows: [
+          { label: "Payment approval", at: 5.2 },
+          { label: "Tax payment", at: 8.6 },
+          { label: "Social insurance payment", at: 10 },
         ],
+        donut: { value: 91.4, decimals: 1, label: "of transactions via digital channels, 2025", at: 12.1 },
       },
       english:
         "In November 2025, Vietcombank launched a **new web version**, with improved **payment approval processes** and additional tools for tax and **social insurance payments**. In 2025, **91.4 percent** of Vietcombank's customer transactions were conducted through **digital channels**.",
@@ -98,6 +131,19 @@ export const digitalBanking20261027: Episode = {
           { label: "eFAST · CORPORATE CUSTOMERS", prefix: "≈", value: 317000, note: "served by eFAST", at: 22.2 },
         ],
       },
+      art: {
+        phone: {
+          app: "VietinBank iPay",
+          logo: VTB_LOGO,
+          color: VTB_BLUE,
+          rows: [
+            { label: "QR payment", amount: "-85,000" },
+            { label: "Transfer", amount: "-1,200,000" },
+            { label: "Savings", amount: "+2,000,000" },
+          ],
+          toast: { text: "Payment successful", at: 9 },
+        },
+      },
       english:
         "Meanwhile, VietinBank has been expanding its **digital ecosystem** through two key platforms: **iPay** for individual customers and **eFAST** for corporate clients. By the end of 2025, approximately 10.2 million individual customers were using iPay, while eFAST served around 317,000 corporate customers.",
       vietnamese:
@@ -114,7 +160,7 @@ export const digitalBanking20261027: Episode = {
         type: "stats",
         stats: [{ label: "OPEN BANKING PARTNERS", value: 889, change: "36%", direction: "up", note: "via iConnect, 2025" }],
       },
-      art: { icon: "network", satellites: ["landmark", "building", "zap"] },
+      art: { network: { center: "VietinBank", count: 889, label: "partners", logo: VTB_LOGO } },
       english:
         "Beyond everyday transactions, VietinBank has also expanded **Open Banking** through its **iConnect** platform, connecting banking services with **external partners**. In 2025, its Open Banking network reached 889 partners, up 36 percent from the previous year. This reflects a growing focus on **integration**, **automation**, and **business connectivity**.",
       vietnamese:

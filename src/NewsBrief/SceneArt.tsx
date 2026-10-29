@@ -2,6 +2,7 @@ import React from "react";
 import { Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { COLORS } from "../theme";
 import { ICONS } from "./Icons";
+import { NetworkArt, PhoneMockup } from "./Mockups";
 import { SceneArt as SceneArtSpec } from "./types";
 
 export const ART_SIZE = 300;
@@ -118,6 +119,14 @@ const Photo: React.FC<{ src: string; from: number }> = ({ src, from }) => {
 
 export const SceneArtView: React.FC<{ art: SceneArtSpec; from: number }> = ({ art, from }) => (
   <div style={{ position: "absolute", right: 40, top: 92, width: ART_SIZE, height: ART_SIZE }}>
-    {"image" in art ? <Photo src={art.image} from={from} /> : <Medallion spec={art} from={from} />}
+    {"image" in art ? (
+      <Photo src={art.image} from={from} />
+    ) : "phone" in art ? (
+      <PhoneMockup spec={art.phone} from={from} size={ART_SIZE} />
+    ) : "network" in art ? (
+      <NetworkArt spec={art.network} from={from} size={ART_SIZE} />
+    ) : (
+      <Medallion spec={art} from={from} />
+    )}
   </div>
 );

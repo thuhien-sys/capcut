@@ -29,6 +29,8 @@ export type ScreenVisual =
       type: "chips";
       kicker: string;
       title: string;
+      /** Image in /public shown before the title, e.g. a bank's logo. */
+      titleLogo?: string;
       /** `at`: seconds into the scene when the chip appears. */
       chips: { name: string; note?: string; at?: number }[];
     }
@@ -36,6 +38,15 @@ export type ScreenVisual =
       /** Sample account numbers, one at a time, with their last `highlight` digits in gold. */
       type: "numbers";
       items: { label: string; digits: string; highlight: number; note?: string; at?: number }[];
+    }
+  | {
+      /** A web app window whose rows get approved one by one, beside a donut chart. */
+      type: "dashboard";
+      kicker: string;
+      title: string;
+      window: string;
+      rows: { label: string; at?: number }[];
+      donut: { value: number; decimals?: number; label: string; at?: number };
     }
   | {
       /** Nodes left to right joined by arrows, e.g. who pays whom. */
@@ -48,7 +59,23 @@ export type ScreenVisual =
     };
 
 /** Illustration at the top right of the news screen: an animated icon, or a photo in /public. */
-export type SceneArt = { icon: IconName; satellites?: IconName[] } | { image: string };
+export type PhoneSpec = {
+  /** App name in the header; replaced by `logo` (a file in /public) when given. */
+  app: string;
+  logo?: string;
+  /** Header colour. */
+  color?: string;
+  rows: { label: string; amount?: string; at?: number }[];
+  /** Notification that pops up at `at` seconds into the scene. */
+  toast?: { text: string; at?: number };
+};
+
+export type SceneArt =
+  | { icon: IconName; satellites?: IconName[] }
+  | { image: string }
+  | { phone: PhoneSpec }
+  /** Partners joining a central bank, with a counter. */
+  | { network: { center: string; count: number; label: string; logo?: string } };
 
 type SceneBase = {
   seconds: number;
