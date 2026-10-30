@@ -4,7 +4,7 @@ import { FONT_DISPLAY } from "../fonts";
 import { COLORS, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
 import { ICONS, IconName } from "./Icons";
-import { DashboardVisual } from "./Mockups";
+import { DashboardVisual, VersusVisual } from "./Mockups";
 import { ART_SIZE } from "./SceneArt";
 import { StatCard } from "./StatCard";
 import { ScreenVisual } from "./types";
@@ -485,6 +485,9 @@ export const ScreenVisualView: React.FC<{
   }
   if (visual.type === "dashboard") {
     return <DashboardVisual {...visual} from={from} />;
+  }
+  if (visual.type === "versus") {
+    return <VersusVisual {...visual} from={from} />;
   }
   if (visual.type === "numbers") {
     const starts = scheduleItems(visual.items, from, durationInFrames);

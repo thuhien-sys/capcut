@@ -11,11 +11,12 @@ export const Header: React.FC<{ channel: string }> = ({ channel }) => {
   return (
     <AbsoluteFill
       style={{
+        top: LAYOUT.headerTop,
         height: LAYOUT.headerHeight,
         justifyContent: "center",
         alignItems: "center",
         flexDirection: "column",
-        gap: 14,
+        gap: 8,
       }}
     >
       <div
@@ -26,7 +27,7 @@ export const Header: React.FC<{ channel: string }> = ({ channel }) => {
           gap: 18,
           fontFamily: FONT_DISPLAY,
           fontWeight: 900,
-          fontSize: 50,
+          fontSize: 38,
           letterSpacing: 2,
           color: COLORS.white,
         }}
@@ -36,7 +37,7 @@ export const Header: React.FC<{ channel: string }> = ({ channel }) => {
       </div>
       <div
         style={{
-          width: 760 * line,
+          width: 700 * line,
           height: 5,
           borderRadius: 3,
           background: `linear-gradient(90deg, transparent, ${COLORS.gold}, transparent)`,

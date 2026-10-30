@@ -4,7 +4,8 @@ import { Easing, Img, interpolate, spring, staticFile, useCurrentFrame, useVideo
 import { FONT_BODY, FONT_DISPLAY } from "../fonts";
 import { COLORS, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
-import { PhoneSpec } from "./types";
+import { ICONS } from "./Icons";
+import { PhoneSpec, VersusSide } from "./types";
 
 const atFrame = (at: number | undefined, fallback: number) =>
   at !== undefined ? Math.round(at * VIDEO.fps) : fallback;
@@ -229,18 +230,19 @@ export const DashboardVisual: React.FC<{
   title: string;
   window: string;
   rows: { label: string; at?: number }[];
-  donut: { value: number; decimals?: number; label: string; at?: number };
+  donut?: { value: number; decimals?: number; label: string; at?: number };
   from: number;
 }> = ({ kicker, title, window, rows, donut, from }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const win = spring({ frame: frame - from - 6, fps, config: { damping: 14 } });
-  const donutStart = atFrame(donut.at, from + 30);
+  const donutStart = donut ? atFrame(donut.at, from + 30) : 0;
   const fill = interpolate(frame, [donutStart, donutStart + 40], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.out(Easing.cubic),
   });
+  const value = donut?.value ?? 0;
   const r = 78;
   const circumference = 2 * Math.PI * r;
 
@@ -265,7 +267,7 @@ export const DashboardVisual: React.FC<{
       <div style={{ display: "flex", gap: 30, marginTop: 16, alignItems: "center" }}>
         <div
           style={{
-            width: 600,
+            width: donut ? 600 : 960,
             borderRadius: 14,
             overflow: "hidden",
             background: "#f2f5fa",
@@ -319,6 +321,7 @@ export const DashboardVisual: React.FC<{
             })}
           </div>
         </div>
+        {donut ? (
         <div style={{ position: "relative", width: 200, height: 200, opacity: progress(frame, donutStart - 6, 10) }}>
           <svg width={200} height={200}>
             <circle cx={100} cy={100} r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth={22} />
@@ -330,7 +333,7 @@ export const DashboardVisual: React.FC<{
               stroke={COLORS.gold}
               strokeWidth={22}
               strokeDasharray={circumference}
-              strokeDashoffset={circumference * (1 - (fill * donut.value) / 100)}
+              strokeDashoffset={circumference * (1 - (fill * value) / 100)}
               transform="rotate(-90 100 100)"
             />
           </svg>
@@ -346,7 +349,7 @@ export const DashboardVisual: React.FC<{
               color: COLORS.white,
             }}
           >
-            <div style={{ fontWeight: 900, fontSize: 40 }}>{(donut.value * fill).toFixed(donut.decimals ?? 0)}%</div>
+            <div style={{ fontWeight: 900, fontSize: 40 }}>{(value * fill).toFixed(donut.decimals ?? 0)}%</div>
           </div>
           <div
             style={{
@@ -363,6 +366,119 @@ export const DashboardVisual: React.FC<{
           >
             {donut.label}
           </div>
+        </div>
+        ) : null}
+      </div>
+    </div>
+  );
+};
+
+/** Two cards sliding in from either side, with a VS badge between them. */
+export const VersusVisual: React.FC<{ kicker: string; left: VersusSide; right: VersusSide; from: number }> = ({
+  kicker,
+  left,
+  right,
+  from,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const inL = spring({ frame: frame - from - 4, fps, config: { damping: 14 } });
+  const inR = spring({ frame: frame - from - 10, fps, config: { damping: 14 } });
+  const vs = spring({ frame: frame - from - 20, fps, config: { damping: 8 } });
+  const pulse = 1 + 0.05 * Math.sin(frame / 8);
+
+  const card = (side: VersusSide, enter: number, dir: -1 | 1) => {
+    const Icon = ICONS[side.icon];
+    return (
+      <div
+        style={{
+          width: 400,
+          height: 250,
+          borderRadius: 22,
+          padding: "22px 26px",
+          background: `linear-gradient(145deg, ${side.color}, ${COLORS.navyDeep})`,
+          border: "2px solid rgba(255,255,255,0.25)",
+          boxShadow: "0 18px 40px rgba(0,0,0,0.5)",
+          transform: `translateX(${(1 - enter) * dir * 500}px) rotate(${dir * -2}deg)`,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          fontFamily: FONT_DISPLAY,
+          color: COLORS.white,
+        }}
+      >
+        <div
+          style={{
+            width: 74,
+            height: 74,
+            borderRadius: 37,
+            background: "rgba(255,255,255,0.16)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {side.logo ? (
+            <Img src={staticFile(side.logo)} style={{ maxWidth: 60, maxHeight: 50, objectFit: "contain" }} />
+          ) : (
+            <Icon size={40} color="#fff" strokeWidth={2} />
+          )}
+        </div>
+        <div>
+          <div style={{ fontWeight: 900, fontSize: side.name.length > 10 ? 44 : 56, lineHeight: 1.05 }}>{side.name}</div>
+          {side.note ? (
+            <div style={{ marginTop: 8, fontWeight: 700, fontSize: 24, color: "rgba(255,255,255,0.85)" }}>{side.note}</div>
+          ) : null}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{ position: "absolute", left: 60, right: 60, top: 100 }}>
+      <div style={fadeUp(frame, from, 14)}>
+        <div
+          style={{
+            display: "inline-block",
+            padding: "8px 18px",
+            background: COLORS.gold,
+            color: COLORS.navyDeep,
+            fontFamily: FONT_DISPLAY,
+            fontWeight: 800,
+            fontSize: 28,
+            letterSpacing: 3,
+          }}
+        >
+          {kicker}
+        </div>
+      </div>
+      <div style={{ position: "relative", marginTop: 22, display: "flex", justifyContent: "space-between" }}>
+        {card(left, inL, -1)}
+        {card(right, inR, 1)}
+        <div
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            width: 120,
+            height: 120,
+            marginLeft: -60,
+            marginTop: -60,
+            borderRadius: 60,
+            background: COLORS.gold,
+            border: `6px solid ${COLORS.navyDeep}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontFamily: FONT_DISPLAY,
+            fontWeight: 900,
+            fontSize: 48,
+            color: COLORS.navyDeep,
+            transform: `scale(${vs * pulse})`,
+            boxShadow: "0 0 40px rgba(245,196,0,0.6)",
+          }}
+        >
+          VS
         </div>
       </div>
     </div>

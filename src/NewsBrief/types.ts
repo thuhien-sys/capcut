@@ -46,7 +46,14 @@ export type ScreenVisual =
       title: string;
       window: string;
       rows: { label: string; at?: number }[];
-      donut: { value: number; decimals?: number; label: string; at?: number };
+      donut?: { value: number; decimals?: number; label: string; at?: number };
+    }
+  | {
+      /** Two sides facing each other with a VS badge, e.g. two banks being compared. */
+      type: "versus";
+      kicker: string;
+      left: VersusSide;
+      right: VersusSide;
     }
   | {
       /** Nodes left to right joined by arrows, e.g. who pays whom. */
@@ -69,6 +76,8 @@ export type PhoneSpec = {
   /** Notification that pops up at `at` seconds into the scene. */
   toast?: { text: string; at?: number };
 };
+
+export type VersusSide = { name: string; note?: string; color: string; icon: IconName; logo?: string };
 
 export type SceneArt =
   | { icon: IconName; satellites?: IconName[] }

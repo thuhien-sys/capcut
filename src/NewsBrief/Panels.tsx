@@ -1,15 +1,17 @@
 import React from "react";
 import { interpolate, useCurrentFrame } from "remotion";
 import { FONT_BODY, FONT_DISPLAY, FONT_IPA } from "../fonts";
-import { COLORS, LAYOUT, VIDEO } from "../theme";
+import { COLORS, LAYOUT, SAFE, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
 import { RichText } from "./RichText";
 import { useFitScale } from "./useFitScale";
 import { QuizText, quizFrames } from "./Quiz";
 import { CardScene, NewsScene, PatternScene, QuizScene, VerbListScene, VocabItem } from "./types";
 
-const PADDING_X = 44;
-const DIVIDER_X = 712;
+const PADDING_X = SAFE.left;
+const DIVIDER_X = 664;
+/** Height the bilingual text may fill, so it ends above TikTok's caption. */
+const TEXT_HEIGHT = LAYOUT.panelBottom - LAYOUT.panelTop - 50;
 
 /** Frame an item appears: its `at` time if set, otherwise a stagger. */
 const itemStart = (at: number | undefined, fallback: number) =>
@@ -33,8 +35,8 @@ const PanelArea: React.FC<{ durationInFrames: number; children: React.ReactNode;
         position: "absolute",
         top: LAYOUT.panelTop,
         left: 0,
-        right: 0,
-        bottom: 0,
+        width: VIDEO.width,
+        height: LAYOUT.panelBottom - LAYOUT.panelTop,
         opacity: 1 - exit,
         ...style,
       }}
@@ -49,25 +51,27 @@ const keepIpaWords = (ipa: string) => ipa.replace(/(\S)([ˈˌ])/g, "$1\u2060$2")
 
 /** Vocabulary density: 0 normal, 1 for long entries, 2 for many entries. */
 type Density = 0 | 1 | 2;
-const VOCAB_SIZE = [31, 28, 24] as const;
-const VOCAB_GAP = [34, 28, 14] as const;
+const VOCAB_SIZE = [27, 25, 21] as const;
+const VOCAB_GAP = [28, 22, 10] as const;
 
 const Vocab: React.FC<{ item: VocabItem; delay: number; density: Density }> = ({ item, delay, density }) => {
   const frame = useCurrentFrame();
   const p = progress(frame, delay, 16);
-  const size = VOCAB_SIZE[density];
+  // Sized against the column's --fit, so a long vocabulary list shrinks to fit.
+  const size = (n: number) => `calc(${n}px * var(--fit, 1))`;
+  const base = VOCAB_SIZE[density];
   return (
     <div style={{ opacity: p, transform: `translateX(${(1 - p) * 30}px)` }}>
-      <div style={{ fontFamily: FONT_IPA, fontStyle: "italic", fontWeight: 600, fontSize: size + 2, color: COLORS.vocab }}>
+      <div style={{ fontFamily: FONT_IPA, fontStyle: "italic", fontWeight: 600, fontSize: size(base + 2), color: COLORS.vocab }}>
         {item.word}
         {item.pos ? ` (${item.pos})` : ""}:
       </div>
       {item.ipa ? (
-        <div style={{ fontFamily: FONT_IPA, fontSize: size, color: COLORS.white, marginTop: 4 }}>
+        <div style={{ fontFamily: FONT_IPA, fontSize: size(base), color: COLORS.white, marginTop: 4 }}>
           {keepIpaWords(item.ipa)}
         </div>
       ) : null}
-      <div style={{ fontFamily: FONT_BODY, fontSize: size, color: COLORS.white, marginTop: 2 }}>{item.meaning}</div>
+      <div style={{ fontFamily: FONT_BODY, fontSize: size(base), color: COLORS.white, marginTop: 2 }}>{item.meaning}</div>
     </div>
   );
 };
@@ -79,9 +83,10 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
   const density: Density = scene.vocab.length > 5 ? 2 : vocabChars > 150 ? 1 : 0;
   // Without vocabulary the text spans the whole panel.
   const hasVocab = scene.vocab.length > 0;
-  const textWidth = hasVocab ? DIVIDER_X - PADDING_X - 28 : 1080 - 2 * PADDING_X;
+  const textWidth = hasVocab ? DIVIDER_X - PADDING_X - 24 : SAFE.right - SAFE.left;
   // Size the bilingual text to fill the panel, leaving the bottom clear of TikTok's caption.
-  const fit = useFitScale(880);
+  const fit = useFitScale(TEXT_HEIGHT);
+  const vocabFit = useFitScale(TEXT_HEIGHT, 0.6, 1);
   const px = (n: number) => `calc(${n}px * var(--fit))`;
 
   return (
@@ -127,7 +132,7 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
             left: DIVIDER_X,
             top: 40,
             width: 3,
-            height: 980 * divider,
+            height: (TEXT_HEIGHT + 20) * divider,
             background: COLORS.divider,
           }}
         />
@@ -136,12 +141,14 @@ export const NewsPanel: React.FC<{ scene: NewsScene; durationInFrames: number }>
         style={{
           position: "absolute",
           top: 44,
-          left: DIVIDER_X + 30,
-          right: 24,
+          left: DIVIDER_X + 24,
+          width: SAFE.right - DIVIDER_X - 24,
           display: "flex",
           flexDirection: "column",
           gap: VOCAB_GAP[density],
+          ...vocabFit.style,
         }}
+        ref={vocabFit.ref}
       >
         {scene.vocab.map((item, i) => (
           <Vocab key={item.word} item={item} delay={20 + i * 8} density={density} />
@@ -160,8 +167,9 @@ export const QuizPanel: React.FC<{ scene: QuizScene; durationInFrames: number }>
   const density: Density = scene.vocab.length > 5 ? 2 : vocabChars > 150 ? 1 : 0;
   // While viewers guess, the question alone fills the panel; at the reveal it shrinks
   // to make room for the translation.
-  const fitQuestion = useFitScale(880, 0.6, 1.5);
-  const fitAll = useFitScale(880);
+  const fitQuestion = useFitScale(TEXT_HEIGHT, 0.6, 1.5);
+  const fitAll = useFitScale(TEXT_HEIGHT);
+  const vocabFit = useFitScale(TEXT_HEIGHT, 0.6, 1);
   const fitNow = interpolate(frame, [reveal, reveal + 15], [fitQuestion.scale, fitAll.scale], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -171,7 +179,7 @@ export const QuizPanel: React.FC<{ scene: QuizScene; durationInFrames: number }>
     position: "absolute",
     top: 40,
     left: PADDING_X,
-    width: DIVIDER_X - PADDING_X - 28,
+    width: DIVIDER_X - PADDING_X - 24,
     fontFamily: FONT_BODY,
   };
   const questionStyle: React.CSSProperties = { fontWeight: 700, fontSize: px(37), lineHeight: 1.5, color: COLORS.white };
@@ -209,7 +217,7 @@ export const QuizPanel: React.FC<{ scene: QuizScene; durationInFrames: number }>
           left: DIVIDER_X,
           top: 40,
           width: 3,
-          height: 980 * progress(frame, 6, 24),
+          height: (TEXT_HEIGHT + 20) * progress(frame, 6, 24),
           background: COLORS.divider,
         }}
       />
@@ -217,12 +225,14 @@ export const QuizPanel: React.FC<{ scene: QuizScene; durationInFrames: number }>
         style={{
           position: "absolute",
           top: 44,
-          left: DIVIDER_X + 30,
-          right: 24,
+          left: DIVIDER_X + 24,
+          width: SAFE.right - DIVIDER_X - 24,
           display: "flex",
           flexDirection: "column",
           gap: VOCAB_GAP[density],
+          ...vocabFit.style,
         }}
+        ref={vocabFit.ref}
       >
         {scene.vocab.map((item, i) => (
           <Vocab key={item.word} item={item} delay={reveal + 18 + i * 8} density={density} />
@@ -260,7 +270,7 @@ export const VerbListPanel: React.FC<{ scene: VerbListScene; durationInFrames: n
 }) => {
   const frame = useCurrentFrame();
   return (
-    <PanelArea durationInFrames={durationInFrames} style={{ padding: `36px ${PADDING_X}px 0` }}>
+    <PanelArea durationInFrames={durationInFrames} style={{ padding: `36px ${VIDEO.width - SAFE.right}px 0 ${SAFE.left}px` }}>
       <div
         style={{
           ...fadeUp(frame, 6, 16),
@@ -324,7 +334,7 @@ export const PatternPanel: React.FC<{ scene: PatternScene; durationInFrames: num
 }) => {
   const frame = useCurrentFrame();
   return (
-    <PanelArea durationInFrames={durationInFrames} style={{ padding: `40px ${PADDING_X}px 0` }}>
+    <PanelArea durationInFrames={durationInFrames} style={{ padding: `40px ${VIDEO.width - SAFE.right}px 0 ${SAFE.left}px` }}>
       <SectionTitle delay={6}>{scene.title}</SectionTitle>
       <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 24 }}>
         {scene.items.map((item, i) => {
@@ -371,34 +381,52 @@ const CARD_SIZES = { lg: 62, md: 44, sm: 34 } as const;
 
 export const CardPanel: React.FC<{ scene: CardScene; durationInFrames: number }> = ({ scene, durationInFrames }) => {
   const frame = useCurrentFrame();
+  const height = LAYOUT.panelBottom - LAYOUT.panelTop;
+  // Card text is sized to fit between the news screen and TikTok's caption.
+  const fit = useFitScale(height - 40, 0.55, 1);
+  const px = (n: number) => `calc(${n}px * var(--fit))`;
   return (
-    <PanelArea
-      durationInFrames={durationInFrames}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: 34,
-        padding: `0 ${PADDING_X + 20}px 220px`,
-        textAlign: "center",
-      }}
-    >
-      {scene.lines.map((line, i) => (
+    <PanelArea durationInFrames={durationInFrames}>
+      <div
+        style={{
+          position: "absolute",
+          left: SAFE.left,
+          width: SAFE.right - SAFE.left,
+          top: 0,
+          height,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <div
-          key={line.text}
+          ref={fit.ref}
           style={{
-            ...fadeUp(frame, itemStart(line.at, 10 + i * 14), 18),
-            fontFamily: line.size === "lg" ? FONT_DISPLAY : FONT_BODY,
-            fontWeight: line.size === "lg" ? 900 : line.soft ? 400 : 700,
-            fontSize: CARD_SIZES[line.size ?? "md"],
-            lineHeight: 1.3,
-            color: line.accent ? COLORS.gold : line.soft ? COLORS.textSoft : COLORS.white,
+            ...fit.style,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: px(30),
+            textAlign: "center",
           }}
         >
-          <RichText text={line.text} highlightStart={itemStart(line.at, 10 + i * 14) + 10} />
+          {scene.lines.map((line, i) => (
+            <div
+              key={line.text}
+              style={{
+                ...fadeUp(frame, itemStart(line.at, 10 + i * 14), 18),
+                fontFamily: line.size === "lg" ? FONT_DISPLAY : FONT_BODY,
+                fontWeight: line.size === "lg" ? 900 : line.soft ? 400 : 700,
+                fontSize: px(CARD_SIZES[line.size ?? "md"]),
+                lineHeight: 1.3,
+                color: line.accent ? COLORS.gold : line.soft ? COLORS.textSoft : COLORS.white,
+              }}
+            >
+              <RichText text={line.text} highlightStart={itemStart(line.at, 10 + i * 14) + 10} />
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </PanelArea>
   );
 };

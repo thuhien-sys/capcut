@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, useCurrentFrame } from "remotion";
 import { FONT_DISPLAY } from "../fonts";
-import { COLORS, LAYOUT } from "../theme";
+import { COLORS, LAYOUT, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
 import { NewsBackground } from "./NewsBackground";
 import { QuizVisual } from "./Quiz";
@@ -12,14 +12,18 @@ import { Episode, Scene } from "./types";
 export const TICKER_HEIGHT = 64;
 export const OPENER_FRAMES = { breaking: 70, wipe: 16 } as const;
 
+/** The 1080x640 news screen, scaled down and centred so it sits inside the safe zone. */
 const ScreenArea: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div
     style={{
       position: "absolute",
       top: LAYOUT.screenTop,
-      left: 0,
-      width: "100%",
+      left: (VIDEO.width - LAYOUT.screenWidth * LAYOUT.screenScale) / 2,
+      width: LAYOUT.screenWidth,
       height: LAYOUT.screenHeight,
+      transform: `scale(${LAYOUT.screenScale})`,
+      transformOrigin: "top left",
+      borderRadius: 22,
       overflow: "hidden",
     }}
   >

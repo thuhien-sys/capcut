@@ -19,10 +19,26 @@ export const VIDEO = {
   fps: 30,
 };
 
-// Vertical layout (px)
+/**
+ * Everything that must stay readable sits inside TikTok's safe zone: clear of the
+ * "Following | For you" tabs at the top, the like/comment/share buttons on the right
+ * and the caption at the bottom.
+ */
+export const SAFE = {
+  top: 150,
+  bottom: 1490,
+  left: 60,
+  right: 940,
+};
+
 export const LAYOUT = {
-  headerHeight: 150,
-  screenTop: 150,
+  headerTop: SAFE.top,
+  headerHeight: 66,
+  /** The news screen is designed at 1080x640 and drawn scaled down. */
+  screenTop: 222,
+  screenWidth: 1080,
   screenHeight: 640,
-  panelTop: 820,
+  screenScale: 0.78,
+  panelTop: 735,
+  panelBottom: SAFE.bottom,
 };
