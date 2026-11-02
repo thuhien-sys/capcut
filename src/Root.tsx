@@ -10,6 +10,7 @@ import { weeklyQuiz20261023 } from "./episodes/2026-10-23-weekly-quiz";
 import { creditVsDebit20261025 } from "./episodes/2026-10-25-cards";
 import { digitalBanking20261027 } from "./episodes/2026-10-27-digital-banking";
 import { mbVsTechcombank20261029 } from "./episodes/2026-10-29-mb-techcombank";
+import { marketUpdate20261030 } from "./episodes/2026-10-30-markets";
 import { episodeFrames, NewsBrief } from "./NewsBrief/NewsBrief";
 import { Episode } from "./NewsBrief/types";
 import { VIDEO } from "./theme";
@@ -27,6 +28,7 @@ const EPISODES: Record<string, Episode> = {
   "EP-2026-10-25-cards": creditVsDebit20261025,
   "EP-2026-10-27-digital-banking": digitalBanking20261027,
   "EP-2026-10-29-mb-techcombank": mbVsTechcombank20261029,
+  "EP-2026-10-30-markets": marketUpdate20261030,
 };
 
 export const RemotionRoot: React.FC = () => {

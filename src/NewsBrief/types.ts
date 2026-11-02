@@ -49,6 +49,13 @@ export type ScreenVisual =
       donut?: { value: number; decimals?: number; label: string; at?: number };
     }
   | {
+      /** A market price board: one row per price, each revealed when it is read out. */
+      type: "board";
+      kicker: string;
+      title: string;
+      rows: BoardRow[];
+    }
+  | {
       /** Two sides facing each other with a VS badge, e.g. two banks being compared. */
       type: "versus";
       kicker: string;
@@ -75,6 +82,16 @@ export type PhoneSpec = {
   rows: { label: string; amount?: string; at?: number }[];
   /** Notification that pops up at `at` seconds into the scene. */
   toast?: { text: string; at?: number };
+};
+
+export type BoardRow = {
+  label: string;
+  note?: string;
+  icon: IconName;
+  value: string;
+  change?: string;
+  direction?: "up" | "down";
+  at?: number;
 };
 
 export type VersusSide = { name: string; note?: string; color: string; icon: IconName; logo?: string };

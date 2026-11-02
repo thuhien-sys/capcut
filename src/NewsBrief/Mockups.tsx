@@ -5,7 +5,7 @@ import { FONT_BODY, FONT_DISPLAY } from "../fonts";
 import { COLORS, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
 import { ICONS } from "./Icons";
-import { PhoneSpec, VersusSide } from "./types";
+import { BoardRow, PhoneSpec, VersusSide } from "./types";
 
 const atFrame = (at: number | undefined, fallback: number) =>
   at !== undefined ? Math.round(at * VIDEO.fps) : fallback;
@@ -480,6 +480,140 @@ export const VersusVisual: React.FC<{ kicker: string; left: VersusSide; right: V
         >
           VS
         </div>
+      </div>
+    </div>
+  );
+};
+
+/** A market price board: rows flip in as they are read, with coloured change badges. */
+export const BoardVisual: React.FC<{ kicker: string; title: string; rows: BoardRow[]; from: number }> = ({
+  kicker,
+  title,
+  rows,
+  from,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const board = spring({ frame: frame - from - 4, fps, config: { damping: 15 } });
+
+  return (
+    <div style={{ position: "absolute", left: 60, right: 60, top: 98 }}>
+      <div style={{ ...fadeUp(frame, from, 14), display: "flex", alignItems: "center", gap: 18 }}>
+        <div
+          style={{
+            padding: "6px 16px",
+            background: COLORS.gold,
+            color: COLORS.navyDeep,
+            fontFamily: FONT_DISPLAY,
+            fontWeight: 800,
+            fontSize: 24,
+            letterSpacing: 3,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {kicker}
+        </div>
+        <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 900, fontSize: 48, color: COLORS.white, whiteSpace: "nowrap" }}>
+          {title}
+        </div>
+      </div>
+      <div
+        style={{
+          marginTop: 16,
+          borderRadius: 18,
+          padding: "10px 18px",
+          background: "rgba(5,14,26,0.88)",
+          border: "2px solid rgba(255,255,255,0.14)",
+          boxShadow: "0 16px 36px rgba(0,0,0,0.45)",
+          opacity: board,
+          transform: `translateY(${(1 - board) * 40}px)`,
+        }}
+      >
+        {rows.map((row, i) => {
+          const start = atFrame(row.at, from + 14 + i * 16);
+          const shown = frame >= start;
+          const flip = spring({ frame: frame - start, fps, config: { damping: 13 } });
+          const pill = spring({ frame: frame - start - 8, fps, config: { damping: 9 } });
+          const Icon = ICONS[row.icon];
+          const color = row.direction === "up" ? COLORS.up : COLORS.down;
+          // The newest row glows briefly when it lands.
+          const glow = shown ? Math.max(0, 1 - (frame - start) / 30) : 0;
+          return (
+            <div
+              key={row.label}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 16,
+                height: 84,
+                borderBottom: i < rows.length - 1 ? "1px solid rgba(255,255,255,0.12)" : undefined,
+                background: `rgba(245,196,0,${0.12 * glow})`,
+                opacity: shown ? 1 : 0.28,
+              }}
+            >
+              <div
+                style={{
+                  width: 54,
+                  height: 54,
+                  borderRadius: 27,
+                  flexShrink: 0,
+                  background: shown ? COLORS.gold : "rgba(255,255,255,0.15)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Icon size={30} color={shown ? COLORS.navyDeep : "#fff"} strokeWidth={2.2} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 800, fontSize: 30, color: COLORS.white, whiteSpace: "nowrap" }}>
+                  {row.label}
+                </div>
+                {row.note ? (
+                  <div style={{ fontFamily: FONT_BODY, fontWeight: 600, fontSize: 19, color: COLORS.textSoft, whiteSpace: "nowrap" }}>
+                    {row.note}
+                  </div>
+                ) : null}
+              </div>
+              <div style={{ overflow: "hidden", height: 56 }}>
+                <div
+                  style={{
+                    fontFamily: FONT_DISPLAY,
+                    fontWeight: 900,
+                    fontSize: 44,
+                    lineHeight: "56px",
+                    color: COLORS.white,
+                    fontVariantNumeric: "tabular-nums",
+                    whiteSpace: "nowrap",
+                    transform: `translateY(${(1 - (shown ? flip : 0)) * 56}px)`,
+                  }}
+                >
+                  {row.value}
+                </div>
+              </div>
+              {row.change ? (
+                <div
+                  style={{
+                    width: 128,
+                    textAlign: "center",
+                    padding: "6px 0",
+                    borderRadius: 10,
+                    background: color,
+                    color: "#fff",
+                    fontFamily: FONT_DISPLAY,
+                    fontWeight: 800,
+                    fontSize: 26,
+                    transform: `scale(${shown ? pill : 0})`,
+                  }}
+                >
+                  {row.direction === "up" ? "▲" : "▼"} {row.change}
+                </div>
+              ) : (
+                <div style={{ width: 128 }} />
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { FONT_DISPLAY } from "../fonts";
 import { COLORS, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
 import { ICONS, IconName } from "./Icons";
-import { DashboardVisual, VersusVisual } from "./Mockups";
+import { BoardVisual, DashboardVisual, VersusVisual } from "./Mockups";
 import { ART_SIZE } from "./SceneArt";
 import { StatCard } from "./StatCard";
 import { ScreenVisual } from "./types";
@@ -489,6 +489,9 @@ export const ScreenVisualView: React.FC<{
   if (visual.type === "versus") {
     return <VersusVisual {...visual} from={from} />;
   }
+  if (visual.type === "board") {
+    return <BoardVisual {...visual} from={from} />;
+  }
   if (visual.type === "numbers") {
     const starts = scheduleItems(visual.items, from, durationInFrames);
     return (
@@ -515,7 +518,7 @@ export const ScreenVisualView: React.FC<{
       {visual.stats.map((stat, i) => {
         const isLast = i === visual.stats.length - 1;
         const end = isLast ? durationInFrames + 30 : starts[i + 1];
-        return <StatCard key={stat.label} stat={stat} from={starts[i]} to={end} />;
+        return <StatCard key={stat.label} stat={stat} from={starts[i]} to={end} narrow={narrow} />;
       })}
     </>
   );

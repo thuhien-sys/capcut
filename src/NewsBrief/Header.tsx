@@ -27,7 +27,7 @@ export const Header: React.FC<{ channel: string }> = ({ channel }) => {
           gap: 18,
           fontFamily: FONT_DISPLAY,
           fontWeight: 900,
-          fontSize: 38,
+          fontSize: 42,
           letterSpacing: 2,
           color: COLORS.white,
         }}

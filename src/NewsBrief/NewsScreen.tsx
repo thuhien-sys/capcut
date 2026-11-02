@@ -12,22 +12,31 @@ import { Episode, Scene } from "./types";
 export const TICKER_HEIGHT = 64;
 export const OPENER_FRAMES = { breaking: 70, wipe: 16 } as const;
 
-/** The 1080x640 news screen, scaled down and centred so it sits inside the safe zone. */
-const ScreenArea: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+/**
+ * The full-width 1080x640 news screen. The background fills it edge to edge; graphics
+ * (`fullBleed` false) are drawn slightly smaller about the centre to stay clear of the edges.
+ */
+const ScreenArea: React.FC<{ children: React.ReactNode; fullBleed?: boolean }> = ({ children, fullBleed }) => (
   <div
     style={{
       position: "absolute",
       top: LAYOUT.screenTop,
-      left: (VIDEO.width - LAYOUT.screenWidth * LAYOUT.screenScale) / 2,
+      left: (VIDEO.width - LAYOUT.screenWidth) / 2,
       width: LAYOUT.screenWidth,
       height: LAYOUT.screenHeight,
-      transform: `scale(${LAYOUT.screenScale})`,
-      transformOrigin: "top left",
-      borderRadius: 22,
       overflow: "hidden",
     }}
   >
-    {children}
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        transform: fullBleed ? undefined : `scale(${LAYOUT.screenContentScale})`,
+        transformOrigin: "center",
+      }}
+    >
+      {children}
+    </div>
   </div>
 );
 
@@ -205,7 +214,7 @@ const LowerThird: React.FC<{ location: string; headline: string; start: number }
 
 /** Persistent across scenes: background footage/graphics behind the news screen. */
 export const ScreenBackground: React.FC<{ backgroundVideo?: string }> = ({ backgroundVideo }) => (
-  <ScreenArea>
+  <ScreenArea fullBleed>
     <NewsBackground backgroundVideo={backgroundVideo} />
   </ScreenArea>
 );

@@ -20,25 +20,25 @@ export const VIDEO = {
 };
 
 /**
- * Everything that must stay readable sits inside TikTok's safe zone: clear of the
- * "Following | For you" tabs at the top, the like/comment/share buttons on the right
- * and the caption at the bottom.
+ * The video fills the whole 9:16 frame, but text keeps clear of its edges: on tall
+ * phones TikTok fills the screen by cropping the left and right sides, and its tabs
+ * and caption sit over the top and bottom.
  */
 export const SAFE = {
-  top: 150,
-  bottom: 1490,
-  left: 60,
-  right: 940,
+  top: 120,
+  bottom: 1730,
+  left: 96,
+  right: 984,
 };
 
 export const LAYOUT = {
   headerTop: SAFE.top,
-  headerHeight: 66,
-  /** The news screen is designed at 1080x640 and drawn scaled down. */
-  screenTop: 222,
+  headerHeight: 76,
+  /** The news screen spans the full width; its graphics are drawn slightly smaller so they stay clear of the edges. */
+  screenTop: 200,
   screenWidth: 1080,
   screenHeight: 640,
-  screenScale: 0.78,
-  panelTop: 735,
+  screenContentScale: 0.85,
+  panelTop: 862,
   panelBottom: SAFE.bottom,
 };

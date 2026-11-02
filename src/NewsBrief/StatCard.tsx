@@ -9,7 +9,14 @@ const formatNumber = (value: number, decimals: number) =>
   value.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
 /** One key figure, counted up from zero. `frame` is relative to when the card appears. */
-export const StatCard: React.FC<{ stat: Stat; from: number; to: number }> = ({ stat, from, to }) => {
+/** `narrow`: smaller figures, leaving the right side free for scene art. */
+export const StatCard: React.FC<{ stat: Stat; from: number; to: number; narrow?: boolean }> = ({
+  stat,
+  from,
+  to,
+  narrow,
+}) => {
+  const k = narrow ? 0.78 : 1;
   const frame = useCurrentFrame();
   const enter = progress(frame, from, 14);
   const exit = progress(frame, to - 12, 12);
@@ -58,11 +65,11 @@ export const StatCard: React.FC<{ stat: Stat; from: number; to: number }> = ({ s
           textShadow: "0 6px 24px rgba(0,0,0,0.45)",
         }}
       >
-        {stat.prefix ? <span style={{ fontSize: 56 }}>{stat.prefix}</span> : null}
-        <span style={{ fontSize: 132, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+        {stat.prefix ? <span style={{ fontSize: 56 * k }}>{stat.prefix}</span> : null}
+        <span style={{ fontSize: 132 * k, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
           {formatNumber(stat.value * count, stat.decimals ?? 0)}
         </span>
-        {stat.suffix ? <span style={{ fontSize: 48 }}>{stat.suffix}</span> : null}
+        {stat.suffix ? <span style={{ fontSize: 48 * k }}>{stat.suffix}</span> : null}
       </div>
       {stat.change || stat.note ? (
         <div

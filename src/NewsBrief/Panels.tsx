@@ -9,7 +9,7 @@ import { QuizText, quizFrames } from "./Quiz";
 import { CardScene, NewsScene, PatternScene, QuizScene, VerbListScene, VocabItem } from "./types";
 
 const PADDING_X = SAFE.left;
-const DIVIDER_X = 664;
+const DIVIDER_X = 708;
 /** Height the bilingual text may fill, so it ends above TikTok's caption. */
 const TEXT_HEIGHT = LAYOUT.panelBottom - LAYOUT.panelTop - 50;
 
