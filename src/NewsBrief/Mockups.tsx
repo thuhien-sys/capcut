@@ -1,4 +1,4 @@
-import { CheckCheck, Landmark } from "lucide-react";
+import { Check, CheckCheck, Landmark, Search, User } from "lucide-react";
 import React from "react";
 import { Easing, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONT_BODY, FONT_DISPLAY } from "../fonts";
@@ -224,6 +224,300 @@ export const NetworkArt: React.FC<{
   );
 };
 
+/** A search box that types its text, with a blinking caret. */
+const SearchBox: React.FC<{ search: { text: string; at?: number }; from: number }> = ({ search, from }) => {
+  const frame = useCurrentFrame();
+  const start = atFrame(search.at, from + 14);
+  const typed = Math.max(0, Math.min(search.text.length, Math.floor((frame - start) / 1.6)));
+  const caret = Math.floor(frame / 12) % 2 === 0 && typed < search.text.length + 1;
+  return (
+    <div
+      style={{
+        margin: "10px 14px 6px",
+        padding: "8px 14px",
+        borderRadius: 22,
+        background: "#fff",
+        border: "2px solid #c9d3e0",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        fontSize: 18,
+        fontWeight: 600,
+        color: "#1d2a3a",
+      }}
+    >
+      <Search size={20} color="#5b6b80" strokeWidth={2.4} />
+      <span style={{ whiteSpace: "nowrap", overflow: "hidden" }}>
+        {search.text.slice(0, typed)}
+        <span style={{ opacity: caret ? 1 : 0, color: "#1d5fa8" }}>|</span>
+      </span>
+    </div>
+  );
+};
+
+/** A generic identity card: a scan line sweeps across it, then a verification badge pops. */
+export const IdCardArt: React.FC<{
+  spec: { title: string; badge: string; badgeAt?: number };
+  from: number;
+  size: number;
+}> = ({ spec, from, size }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const enter = spring({ frame: frame - from, fps, config: { damping: 13 } });
+  const bob = Math.sin(frame / 26) * 5;
+  const badgeAt = atFrame(spec.badgeAt, from + 60);
+  const badge = spring({ frame: frame - badgeAt, fps, config: { damping: 9 } });
+  const scanning = frame < badgeAt;
+  const scan = ((frame - from) % 45) / 45;
+  const w = size;
+  const h = size * 0.63;
+
+  return (
+    <div style={{ position: "absolute", inset: 0, transform: `translateY(${(1 - enter) * 60 + bob}px)`, opacity: enter }}>
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 20,
+          width: w,
+          height: h,
+          borderRadius: 18,
+          overflow: "hidden",
+          background: "linear-gradient(135deg, #2c6db3, #0f2f5e)",
+          border: "2px solid rgba(255,255,255,0.35)",
+          boxShadow: "0 16px 36px rgba(0,0,0,0.5)",
+          transform: "rotate(-4deg)",
+          fontFamily: FONT_DISPLAY,
+          color: "#fff",
+        }}
+      >
+        <div style={{ padding: "12px 16px 0", fontWeight: 800, fontSize: 15, letterSpacing: 2, opacity: 0.9 }}>
+          {spec.title}
+        </div>
+        <div style={{ display: "flex", gap: 14, padding: "10px 16px" }}>
+          <div
+            style={{
+              width: 70,
+              height: 86,
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.18)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <User size={44} color="#fff" strokeWidth={1.8} />
+          </div>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 9, paddingTop: 6 }}>
+            {[0.95, 0.7, 0.85, 0.5].map((f, i) => (
+              <div key={i} style={{ height: 9, width: `${f * 100}%`, borderRadius: 5, background: "rgba(255,255,255,0.45)" }} />
+            ))}
+          </div>
+        </div>
+        <div style={{ position: "absolute", right: 16, bottom: 14, width: 42, height: 32, borderRadius: 6, background: COLORS.gold }} />
+        {/* Holographic shine */}
+        <div
+          style={{
+            position: "absolute",
+            top: -40,
+            bottom: -40,
+            width: 60,
+            left: `${((frame * 2) % 400) - 80}px`,
+            transform: "skewX(-20deg)",
+            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)",
+          }}
+        />
+        {scanning ? (
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: `${scan * 100}%`,
+              height: 4,
+              background: COLORS.up,
+              boxShadow: `0 0 16px 4px ${COLORS.up}`,
+            }}
+          />
+        ) : null}
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 20 + h + 26,
+          display: "flex",
+          justifyContent: "center",
+          opacity: frame >= badgeAt ? 1 : 0,
+          transform: `scale(${frame >= badgeAt ? badge : 0})`,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "8px 16px",
+            borderRadius: 24,
+            background: COLORS.up,
+            color: "#fff",
+            fontFamily: FONT_DISPLAY,
+            fontWeight: 900,
+            fontSize: 22,
+            boxShadow: "0 0 24px rgba(46,204,113,0.6)",
+          }}
+        >
+          <CheckCheck size={22} color="#fff" strokeWidth={3} />
+          {spec.badge}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/** A paper checklist: items tick as they are read, then a stamp slams down. */
+export const ChecklistVisual: React.FC<{
+  kicker: string;
+  title: string;
+  items: { label: string; note?: string; at?: number }[];
+  stamp?: { text: string; at?: number };
+  from: number;
+  narrow: boolean;
+}> = ({ kicker, title, items, stamp, from, narrow }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const paper = spring({ frame: frame - from - 4, fps, config: { damping: 14 } });
+  const stampAt = stamp ? atFrame(stamp.at, from + 30 + items.length * 18) : Infinity;
+  const slam = frame >= stampAt ? spring({ frame: frame - stampAt, fps, config: { damping: 10, mass: 0.6 } }) : 0;
+  // Four items with notes would crowd the paper; without notes they fit at full size.
+  const compact = items.length > 3 && items.some((item) => item.note);
+
+  return (
+    <div style={{ position: "absolute", left: 60, width: narrow ? 640 : 960, top: 96 }}>
+      <div style={{ ...fadeUp(frame, from, 14), display: "flex", alignItems: "center", gap: 18 }}>
+        <div
+          style={{
+            padding: "6px 16px",
+            background: COLORS.gold,
+            color: COLORS.navyDeep,
+            fontFamily: FONT_DISPLAY,
+            fontWeight: 800,
+            fontSize: 24,
+            letterSpacing: 3,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {kicker}
+        </div>
+      </div>
+      <div
+        style={{
+          position: "relative",
+          marginTop: 14,
+          borderRadius: 14,
+          background: "#fbfaf6",
+          boxShadow: "0 18px 40px rgba(0,0,0,0.5)",
+          padding: compact ? "12px 22px 10px" : "16px 22px 14px",
+          transform: `translateY(${(1 - paper) * 70}px) rotate(${-1.2 * paper}deg)`,
+          opacity: paper,
+          fontFamily: FONT_BODY,
+        }}
+      >
+        <div
+          style={{
+            fontFamily: FONT_DISPLAY,
+            fontWeight: 900,
+            fontSize: compact ? 26 : 30,
+            color: COLORS.navyDeep,
+            borderBottom: "3px solid #1d3b5c",
+            paddingBottom: 6,
+            marginBottom: compact ? 4 : 8,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {title}
+        </div>
+        {items.map((item, i) => {
+          const start = atFrame(item.at, from + 20 + i * 18);
+          const done = frame >= start;
+          const tick = done ? spring({ frame: frame - start, fps, config: { damping: 10 } }) : 0;
+          return (
+            <div
+              key={item.label}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                padding: compact ? "6px 0" : "9px 0",
+                borderBottom: i < items.length - 1 ? "1px dashed #c9d0da" : undefined,
+                background: done ? `rgba(46,204,113,${0.14 * Math.max(0, 1 - (frame - start) / 25)})` : undefined,
+              }}
+            >
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 8,
+                  flexShrink: 0,
+                  border: `3px solid ${done ? COLORS.up : "#9aa7b8"}`,
+                  background: done ? COLORS.up : "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {done ? (
+                  <div style={{ transform: `scale(${tick})`, display: "flex" }}>
+                    <Check size={24} color="#fff" strokeWidth={4} />
+                  </div>
+                ) : null}
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: compact ? 23 : 26,
+                    color: done ? COLORS.navyDeep : "#6b7a8f",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {item.label}
+                </div>
+                {item.note ? (
+                  <div style={{ fontSize: compact ? 16 : 18, color: "#5b6b80", whiteSpace: "nowrap" }}>{item.note}</div>
+                ) : null}
+              </div>
+            </div>
+          );
+        })}
+        {stamp && frame >= stampAt ? (
+          <div
+            style={{
+              position: "absolute",
+              right: 26,
+              bottom: 22,
+              padding: "6px 18px",
+              border: `5px solid ${COLORS.red}`,
+              borderRadius: 10,
+              color: COLORS.red,
+              fontFamily: FONT_DISPLAY,
+              fontWeight: 900,
+              fontSize: 38,
+              letterSpacing: 3,
+              opacity: 0.88 * Math.min(1, slam * 1.4),
+              transform: `rotate(-12deg) scale(${2.2 - 1.2 * slam})`,
+              background: "rgba(255,255,255,0.6)",
+            }}
+          >
+            {stamp.text}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+};
+
 /** A web app window whose rows are approved one by one, next to a donut chart that fills up. */
 export const DashboardVisual: React.FC<{
   kicker: string;
@@ -231,8 +525,10 @@ export const DashboardVisual: React.FC<{
   window: string;
   rows: { label: string; at?: number }[];
   donut?: { value: number; decimals?: number; label: string; at?: number };
+  search?: { text: string; at?: number };
+  badge?: string;
   from: number;
-}> = ({ kicker, title, window, rows, donut, from }) => {
+}> = ({ kicker, title, window, rows, donut, search, badge = "✓ Approved", from }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const win = spring({ frame: frame - from - 6, fps, config: { damping: 14 } });
@@ -283,7 +579,8 @@ export const DashboardVisual: React.FC<{
             ))}
             <div style={{ marginLeft: 12, fontSize: 15, fontWeight: 700, color: "#3b4a5e" }}>{window}</div>
           </div>
-          <div style={{ padding: "10px 14px 12px" }}>
+          {search ? <SearchBox search={search} from={from} /> : null}
+          <div style={{ padding: search ? "4px 14px 8px" : "10px 14px 12px" }}>
             {rows.map((row, i) => {
               const start = atFrame(row.at, from + 20 + i * 18);
               const done = frame >= start;
@@ -295,8 +592,8 @@ export const DashboardVisual: React.FC<{
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    padding: "9px 12px",
-                    marginBottom: 7,
+                    padding: search ? "6px 12px" : "9px 12px",
+                    marginBottom: search ? 5 : 7,
                     borderRadius: 9,
                     background: "#fff",
                     boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
@@ -314,7 +611,7 @@ export const DashboardVisual: React.FC<{
                       transform: done ? `scale(${0.7 + 0.3 * tick})` : undefined,
                     }}
                   >
-                    {done ? "✓ Approved" : "Pending"}
+                    {done ? badge : "Pending"}
                   </span>
                 </div>
               );

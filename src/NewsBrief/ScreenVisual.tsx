@@ -4,7 +4,7 @@ import { FONT_DISPLAY } from "../fonts";
 import { COLORS, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
 import { ICONS, IconName } from "./Icons";
-import { BoardVisual, DashboardVisual, VersusVisual } from "./Mockups";
+import { BoardVisual, ChecklistVisual, DashboardVisual, VersusVisual } from "./Mockups";
 import { ART_SIZE } from "./SceneArt";
 import { StatCard } from "./StatCard";
 import { ScreenVisual } from "./types";
@@ -491,6 +491,9 @@ export const ScreenVisualView: React.FC<{
   }
   if (visual.type === "board") {
     return <BoardVisual {...visual} from={from} />;
+  }
+  if (visual.type === "checklist") {
+    return <ChecklistVisual {...visual} from={from} narrow={narrow} />;
   }
   if (visual.type === "numbers") {
     const starts = scheduleItems(visual.items, from, durationInFrames);

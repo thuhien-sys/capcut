@@ -47,6 +47,18 @@ export type ScreenVisual =
       window: string;
       rows: { label: string; at?: number }[];
       donut?: { value: number; decimals?: number; label: string; at?: number };
+      /** A search box that types `text` from `at` seconds into the scene. */
+      search?: { text: string; at?: number };
+      /** Badge once a row is done; defaults to "✓ Approved". */
+      badge?: string;
+    }
+  | {
+      /** A paper checklist: each item is ticked when read out, then an optional stamp lands. */
+      type: "checklist";
+      kicker: string;
+      title: string;
+      items: { label: string; note?: string; at?: number }[];
+      stamp?: { text: string; at?: number };
     }
   | {
       /** A market price board: one row per price, each revealed when it is read out. */
@@ -100,6 +112,8 @@ export type SceneArt =
   | { icon: IconName; satellites?: IconName[] }
   | { image: string }
   | { phone: PhoneSpec }
+  /** A generic identity card being scanned, then a verification badge. */
+  | { idCard: { title: string; badge: string; badgeAt?: number } }
   /** Partners joining a central bank, with a counter. */
   | { network: { center: string; count: number; label: string; logo?: string } };
 
