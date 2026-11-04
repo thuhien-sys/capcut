@@ -12,6 +12,7 @@ import { digitalBanking20261027 } from "./episodes/2026-10-27-digital-banking";
 import { mbVsTechcombank20261029 } from "./episodes/2026-10-29-mb-techcombank";
 import { marketUpdate20261030 } from "./episodes/2026-10-30-markets";
 import { loanDocuments20261102 } from "./episodes/2026-11-02-loan-documents";
+import { corporateDocuments20261103 } from "./episodes/2026-11-03-charter";
 import { episodeFrames, NewsBrief } from "./NewsBrief/NewsBrief";
 import { Episode } from "./NewsBrief/types";
 import { VIDEO } from "./theme";
@@ -31,6 +32,7 @@ const EPISODES: Record<string, Episode> = {
   "EP-2026-10-29-mb-techcombank": mbVsTechcombank20261029,
   "EP-2026-10-30-markets": marketUpdate20261030,
   "EP-2026-11-02-loan-documents": loanDocuments20261102,
+  "EP-2026-11-03-charter": corporateDocuments20261103,
 };
 
 export const RemotionRoot: React.FC = () => {

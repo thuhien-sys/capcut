@@ -2,7 +2,7 @@ import React from "react";
 import { Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { COLORS } from "../theme";
 import { ICONS } from "./Icons";
-import { IdCardArt, NetworkArt, PhoneMockup } from "./Mockups";
+import { IdCardArt, NetworkArt, OrgChartArt, PhoneMockup } from "./Mockups";
 import { SceneArt as SceneArtSpec } from "./types";
 
 export const ART_SIZE = 300;
@@ -127,6 +127,8 @@ export const SceneArtView: React.FC<{ art: SceneArtSpec; from: number }> = ({ ar
       <NetworkArt spec={art.network} from={from} size={ART_SIZE} />
     ) : "idCard" in art ? (
       <IdCardArt spec={art.idCard} from={from} size={ART_SIZE} />
+    ) : "orgChart" in art ? (
+      <OrgChartArt spec={art.orgChart} from={from} size={ART_SIZE} />
     ) : (
       <Medallion spec={art} from={from} />
     )}

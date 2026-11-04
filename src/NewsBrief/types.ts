@@ -53,6 +53,30 @@ export type ScreenVisual =
       badge?: string;
     }
   | {
+      /** A sample certificate whose fields type themselves in as they are read out. */
+      type: "form";
+      kicker: string;
+      title: string;
+      fields: { label: string; value: string; at?: number }[];
+    }
+  | {
+      /** Two documents compared row by row: each row gets a match tick or a red flag. */
+      type: "crosscheck";
+      kicker: string;
+      title: string;
+      left: string;
+      right: string;
+      rows: { label: string; status?: "match" | "flag"; at?: number }[];
+    }
+  | {
+      /** An illustrative ownership donut whose slices draw in, with a legend. */
+      type: "ownership";
+      kicker: string;
+      title: string;
+      center: string;
+      slices: { label: string; value: number; at?: number }[];
+    }
+  | {
       /** A paper checklist: each item is ticked when read out, then an optional stamp lands. */
       type: "checklist";
       kicker: string;
@@ -112,6 +136,8 @@ export type SceneArt =
   | { icon: IconName; satellites?: IconName[] }
   | { image: string }
   | { phone: PhoneSpec }
+  /** A small organisation chart whose boxes appear top to bottom. */
+  | { orgChart: { top: string; middle: string; bottom: [string, string] } }
   /** A generic identity card being scanned, then a verification badge. */
   | { idCard: { title: string; badge: string; badgeAt?: number } }
   /** Partners joining a central bank, with a counter. */

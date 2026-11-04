@@ -1,4 +1,4 @@
-import { Check, CheckCheck, Landmark, Search, User } from "lucide-react";
+import { Check, CheckCheck, FileText, Landmark, Search, User, Users } from "lucide-react";
 import React from "react";
 import { Easing, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONT_BODY, FONT_DISPLAY } from "../fonts";
@@ -390,8 +390,8 @@ export const ChecklistVisual: React.FC<{
   const paper = spring({ frame: frame - from - 4, fps, config: { damping: 14 } });
   const stampAt = stamp ? atFrame(stamp.at, from + 30 + items.length * 18) : Infinity;
   const slam = frame >= stampAt ? spring({ frame: frame - stampAt, fps, config: { damping: 10, mass: 0.6 } }) : 0;
-  // Four items with notes would crowd the paper; without notes they fit at full size.
-  const compact = items.length > 3 && items.some((item) => item.note);
+  // Four items with notes, or five or more, would crowd the paper at full size.
+  const compact = items.length > 4 || (items.length > 3 && items.some((item) => item.note));
 
   return (
     <div style={{ position: "absolute", left: 60, width: narrow ? 640 : 960, top: 96 }}>
@@ -912,6 +912,430 @@ export const BoardVisual: React.FC<{ kicker: string; title: string; rows: BoardR
           );
         })}
       </div>
+    </div>
+  );
+};
+
+const Kicker: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div
+    style={{
+      padding: "6px 16px",
+      background: COLORS.gold,
+      color: COLORS.navyDeep,
+      fontFamily: FONT_DISPLAY,
+      fontWeight: 800,
+      fontSize: 24,
+      letterSpacing: 3,
+      whiteSpace: "nowrap",
+    }}
+  >
+    {children}
+  </div>
+);
+
+/** A sample certificate: each field types itself in when read out; a SAMPLE watermark marks it as made up. */
+export const FormVisual: React.FC<{
+  kicker: string;
+  title: string;
+  fields: { label: string; value: string; at?: number }[];
+  from: number;
+}> = ({ kicker, title, fields, from }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const paper = spring({ frame: frame - from - 4, fps, config: { damping: 14 } });
+  const starts = fields.map((f, i) => atFrame(f.at, from + 20 + i * 20));
+  const current = starts.reduce((acc, s, i) => (frame >= s ? i : acc), -1);
+
+  return (
+    <div style={{ position: "absolute", left: 60, right: 60, top: 96 }}>
+      <div style={fadeUp(frame, from, 14)}>
+        <Kicker>{kicker}</Kicker>
+      </div>
+      <div
+        style={{
+          position: "relative",
+          marginTop: 14,
+          borderRadius: 12,
+          overflow: "hidden",
+          background: "#fbfaf6",
+          boxShadow: "0 18px 40px rgba(0,0,0,0.5)",
+          transform: `translateY(${(1 - paper) * 70}px)`,
+          opacity: paper,
+          fontFamily: FONT_BODY,
+        }}
+      >
+        <div
+          style={{
+            background: COLORS.navyDark,
+            color: "#fff",
+            fontFamily: FONT_DISPLAY,
+            fontWeight: 900,
+            fontSize: 25,
+            letterSpacing: 1,
+            padding: "11px 20px",
+            whiteSpace: "nowrap",
+            borderBottom: `4px solid ${COLORS.gold}`,
+          }}
+        >
+          {title}
+        </div>
+        <div style={{ padding: "6px 20px 10px" }}>
+          {fields.map((field, i) => {
+            const start = starts[i];
+            const typed = Math.max(0, Math.min(field.value.length, Math.floor((frame - start) / 1.2)));
+            const active = i === current;
+            return (
+              <div
+                key={field.label}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 16,
+                  height: 46,
+                  paddingLeft: 12,
+                  borderLeft: `6px solid ${active ? COLORS.gold : "transparent"}`,
+                  borderBottom: i < fields.length - 1 ? "1px dashed #c9d0da" : undefined,
+                  background: active ? "rgba(245,196,0,0.14)" : undefined,
+                }}
+              >
+                <div style={{ width: 300, flexShrink: 0, fontSize: 19, fontWeight: 700, color: "#5b6b80", whiteSpace: "nowrap" }}>
+                  {field.label}
+                </div>
+                <div style={{ fontSize: 23, fontWeight: 800, color: COLORS.navyDeep, whiteSpace: "nowrap" }}>
+                  {field.value.slice(0, typed)}
+                  {active && typed < field.value.length ? <span style={{ color: "#1d5fa8" }}>|</span> : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div
+          style={{
+            position: "absolute",
+            right: 30,
+            top: 70,
+            transform: "rotate(-14deg)",
+            border: "4px solid rgba(215,38,46,0.45)",
+            color: "rgba(215,38,46,0.45)",
+            fontFamily: FONT_DISPLAY,
+            fontWeight: 900,
+            fontSize: 34,
+            letterSpacing: 6,
+            padding: "2px 14px",
+            borderRadius: 8,
+          }}
+        >
+          SAMPLE
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/** Two documents compared row by row, each row ending in a match tick or a red flag. */
+export const CrosscheckVisual: React.FC<{
+  kicker: string;
+  title: string;
+  left: string;
+  right: string;
+  rows: { label: string; status?: "match" | "flag"; at?: number }[];
+  from: number;
+}> = ({ kicker, title, left, right, rows, from }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const enter = spring({ frame: frame - from - 4, fps, config: { damping: 14 } });
+
+  const doc = (label: string, dir: -1 | 1) => (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "8px 14px",
+        borderRadius: 10,
+        background: "#fbfaf6",
+        color: COLORS.navyDeep,
+        fontFamily: FONT_DISPLAY,
+        fontWeight: 800,
+        fontSize: 20,
+        whiteSpace: "nowrap",
+        transform: `translateX(${(1 - enter) * dir * 300}px)`,
+      }}
+    >
+      <FileText size={22} color={COLORS.navyDeep} strokeWidth={2.2} />
+      {label}
+    </div>
+  );
+
+  return (
+    <div style={{ position: "absolute", left: 60, right: 60, top: 96 }}>
+      <div style={{ ...fadeUp(frame, from, 14), display: "flex", alignItems: "center", gap: 18 }}>
+        <Kicker>{kicker}</Kicker>
+        <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 900, fontSize: 40, color: COLORS.white, whiteSpace: "nowrap" }}>
+          {title}
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 14 }}>
+        {doc(left, -1)}
+        {doc(right, 1)}
+      </div>
+      <div style={{ marginTop: 8 }}>
+        {rows.map((row, i) => {
+          const start = atFrame(row.at, from + 24 + i * 18);
+          const done = frame >= start;
+          const draw = progress(frame, start, 14);
+          const pop = done ? spring({ frame: frame - start - 6, fps, config: { damping: 9 } }) : 0;
+          const flag = row.status === "flag";
+          const color = flag ? COLORS.red : COLORS.up;
+          const bar = (dir: -1 | 1) => (
+            <div style={{ flex: 1, height: 12, borderRadius: 6, background: "rgba(255,255,255,0.15)", overflow: "hidden" }}>
+              <div
+                style={{
+                  width: `${draw * 100}%`,
+                  height: "100%",
+                  marginLeft: dir === 1 ? `${(1 - draw) * 100}%` : 0,
+                  background: flag ? COLORS.red : COLORS.gold,
+                }}
+              />
+            </div>
+          );
+          return (
+            <div key={row.label} style={{ display: "flex", alignItems: "center", gap: 14, height: 50, opacity: done ? 1 : 0.35 }}>
+              {bar(-1)}
+              <div
+                style={{
+                  width: 400,
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
+                  padding: "6px 0",
+                  borderRadius: 22,
+                  background: "rgba(5,14,26,0.85)",
+                  border: `2px solid ${done ? color : "rgba(255,255,255,0.2)"}`,
+                  fontFamily: FONT_DISPLAY,
+                  fontWeight: 800,
+                  fontSize: 22,
+                  color: COLORS.white,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {row.label}
+                <span
+                  style={{
+                    display: "inline-flex",
+                    width: 30,
+                    height: 30,
+                    borderRadius: 15,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: color,
+                    transform: `scale(${pop * (flag ? 1 + 0.12 * Math.sin(frame / 4) : 1)})`,
+                    fontSize: 20,
+                    fontWeight: 900,
+                  }}
+                >
+                  {flag ? "?" : <Check size={20} color="#fff" strokeWidth={4} />}
+                </span>
+              </div>
+              {bar(1)}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const SLICE_COLORS = [COLORS.gold, "#2c8fe0", COLORS.red, COLORS.up, "#9b6bff"];
+
+/** An illustrative ownership donut: slices draw in one after another beside a legend. */
+export const OwnershipVisual: React.FC<{
+  kicker: string;
+  title: string;
+  center: string;
+  slices: { label: string; value: number; at?: number }[];
+  from: number;
+}> = ({ kicker, title, center, slices, from }) => {
+  const frame = useCurrentFrame();
+  const total = slices.reduce((n, s) => n + s.value, 0);
+  const r = 92;
+  const circumference = 2 * Math.PI * r;
+  let offset = 0;
+
+  return (
+    <div style={{ position: "absolute", left: 60, right: 60, top: 96 }}>
+      <div style={{ ...fadeUp(frame, from, 14), display: "flex", alignItems: "center", gap: 18 }}>
+        <Kicker>{kicker}</Kicker>
+        <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 900, fontSize: 40, color: COLORS.white, whiteSpace: "nowrap" }}>
+          {title}
+        </div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 46, marginTop: 18 }}>
+        <div style={{ position: "relative", width: 260, height: 260, flexShrink: 0 }}>
+          <svg width={260} height={260} style={{ transform: "rotate(-90deg)" }}>
+            <circle cx={130} cy={130} r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={44} />
+            {slices.map((slice, i) => {
+              const start = atFrame(slice.at, from + 16 + i * 18);
+              const p = progress(frame, start, 20);
+              const len = (slice.value / total) * circumference;
+              const el = (
+                <circle
+                  key={slice.label}
+                  cx={130}
+                  cy={130}
+                  r={r}
+                  fill="none"
+                  stroke={SLICE_COLORS[i % SLICE_COLORS.length]}
+                  strokeWidth={44}
+                  strokeDasharray={`${len * p} ${circumference}`}
+                  strokeDashoffset={-offset}
+                />
+              );
+              offset += len;
+              return el;
+            })}
+          </svg>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              fontFamily: FONT_DISPLAY,
+              fontWeight: 800,
+              fontSize: 20,
+              lineHeight: 1.2,
+              color: COLORS.white,
+              padding: "0 70px",
+            }}
+          >
+            {center}
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {slices.map((slice, i) => {
+            const start = atFrame(slice.at, from + 16 + i * 18);
+            const p = progress(frame, start, 14);
+            return (
+              <div
+                key={slice.label}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 14,
+                  opacity: 0.3 + 0.7 * p,
+                  transform: `translateX(${(1 - p) * 30}px)`,
+                  fontFamily: FONT_DISPLAY,
+                  color: COLORS.white,
+                }}
+              >
+                <div style={{ width: 26, height: 26, borderRadius: 6, background: SLICE_COLORS[i % SLICE_COLORS.length] }} />
+                <div style={{ fontWeight: 800, fontSize: 30, whiteSpace: "nowrap" }}>{slice.label}</div>
+                <div style={{ fontWeight: 900, fontSize: 30, color: COLORS.gold }}>{Math.round((slice.value / total) * 100)}%</div>
+              </div>
+            );
+          })}
+          <div style={{ fontFamily: FONT_BODY, fontStyle: "italic", fontSize: 18, color: COLORS.textSoft }}>
+            Illustration · sample figures
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/** A small organisation chart: boxes and their connecting lines appear top to bottom. */
+export const OrgChartArt: React.FC<{
+  spec: { top: string; middle: string; bottom: [string, string] };
+  from: number;
+  size: number;
+}> = ({ spec, from, size }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const nodes = [
+    { label: spec.top, x: size / 2, y: 40, icon: Users, delay: 0 },
+    { label: spec.middle, x: size / 2, y: 145, icon: Landmark, delay: 14 },
+    { label: spec.bottom[0], x: size * 0.24, y: 250, icon: User, delay: 28 },
+    { label: spec.bottom[1], x: size * 0.76, y: 250, icon: User, delay: 34 },
+  ];
+  const links: [number, number][] = [
+    [0, 1],
+    [1, 2],
+    [1, 3],
+  ];
+  return (
+    <div style={{ position: "absolute", inset: 0 }}>
+      <svg width={size} height={size} style={{ position: "absolute", inset: 0 }}>
+        {links.map(([a, b]) => {
+          const p = progress(frame, from + nodes[b].delay - 4, 12);
+          const A = nodes[a];
+          const B = nodes[b];
+          return (
+            <line
+              key={`${a}-${b}`}
+              x1={A.x}
+              y1={A.y}
+              x2={A.x + (B.x - A.x) * p}
+              y2={A.y + (B.y - A.y) * p}
+              stroke={COLORS.gold}
+              strokeWidth={4}
+            />
+          );
+        })}
+      </svg>
+      {nodes.map((node) => {
+        const pop = spring({ frame: frame - from - node.delay, fps, config: { damping: 11 } });
+        const Icon = node.icon;
+        return (
+          <div
+            key={node.label}
+            style={{
+              position: "absolute",
+              left: node.x - 60,
+              top: node.y - 30,
+              width: 120,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              transform: `scale(${pop})`,
+            }}
+          >
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                background: `radial-gradient(circle at 35% 30%, #2c6db3, ${COLORS.navyDark})`,
+                border: `4px solid ${COLORS.gold}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon size={28} color="#fff" strokeWidth={2} />
+            </div>
+            <div
+              style={{
+                marginTop: 4,
+                padding: "2px 8px",
+                borderRadius: 8,
+                background: "rgba(5,14,26,0.85)",
+                color: "#fff",
+                fontFamily: FONT_DISPLAY,
+                fontWeight: 800,
+                fontSize: 15,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {node.label}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };

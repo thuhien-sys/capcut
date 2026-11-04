@@ -200,7 +200,8 @@ const LowerThird: React.FC<{ location: string; headline: string; start: number }
           background: COLORS.white,
           color: COLORS.navyDeep,
           fontWeight: 800,
-          fontSize: headline.length > 38 ? 32 : 38,
+          // Shrink long headlines so they fit beside the location tab instead of being cut off.
+          fontSize: Math.min(38, Math.floor((1080 - (location.length * 24 + 68) - 70) / (headline.length * 0.6))),
           clipPath: `inset(0 ${(1 - bar) * 100}% 0 0)`,
           whiteSpace: "nowrap",
           overflow: "hidden",
