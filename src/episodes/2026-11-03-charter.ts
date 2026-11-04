@@ -26,16 +26,20 @@ export const corporateDocuments20261103: Episode = {
       headline: "Corporate legal documents for bank loans",
       visual: { type: "title", kicker: "TOP STORY", title: "CORPORATE LOANS", subtitle: "Registration certificate & charter" },
       art: { icon: "fileText", satellites: ["landmark", "bookOpen", "search"] },
+      // The greeting is spoken, and the channel name is already on screen, so the panel
+      // previews the topic and the words instead.
       lines: [
-        { text: "Hello everyone, and welcome to", size: "sm", at: 0.3 },
-        { text: "THE ECONOMIC ENGLISH BRIEF", size: "lg", accent: true, at: 1.8 },
-        { text: "Understand the news. Learn the language.", size: "sm", at: 3.6 },
-        {
-          text: "Our top story today is corporate legal documents for bank loans: **Certificate of Enterprise Registration** and **Company Charter**.",
-          size: "md",
-          at: 5.8,
-        },
-        { text: "Let's get started.", size: "sm", at: 14.5 },
+        { text: "Today's topic", size: "sm", soft: true, at: 0.8 },
+        { text: "**Certificate of Enterprise Registration** & **Company Charter**", size: "md", at: 1.2 },
+      ],
+      keywordsTitle: "Words you'll learn today",
+      keywords: [
+        { word: "charter capital", at: 3 },
+        { word: "legal representative", at: 3.5 },
+        { word: "discrepancies", at: 4 },
+        { word: "shareholder", at: 4.5 },
+        { word: "credit officers", at: 5 },
+        { word: "assessment", at: 5.5 },
       ],
     },
     {
@@ -343,10 +347,15 @@ export const corporateDocuments20261103: Episode = {
       headline: "Thanks for watching",
       visual: { type: "title", kicker: "THE ECONOMIC ENGLISH BRIEF", title: "SEE YOU", subtitle: "Next time!" },
       art: { icon: "graduationCap", satellites: ["bookOpen", "newspaper", "sparkles"] },
-      lines: [
-        { text: "That's it for today's episode of **THE ECONOMIC ENGLISH BRIEF**.", size: "md", at: 0.2 },
-        { text: "Understand the news. Learn the language.", size: "md", accent: true, at: 3.8 },
-        { text: "See you next time!", size: "sm", at: 5.9 },
+      lines: [{ text: "Save this video to review today's words!", size: "md", accent: true, at: 0.2 }],
+      keywordsTitle: "Today's words",
+      keywords: [
+        { word: "Certificate of Enterprise Registration", meaning: "giấy chứng nhận ĐKDN", at: 0.6 },
+        { word: "Company Charter", meaning: "điều lệ công ty", at: 0.9 },
+        { word: "Charter capital", meaning: "vốn điều lệ", at: 1.2 },
+        { word: "Legal representative", meaning: "người đại diện theo pháp luật", at: 1.5 },
+        { word: "Discrepancies", meaning: "khác biệt thông tin", at: 1.8 },
+        { word: "Credit officers", meaning: "cán bộ tín dụng", at: 2.1 },
       ],
     },
   ],

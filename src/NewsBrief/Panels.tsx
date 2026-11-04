@@ -383,7 +383,7 @@ export const CardPanel: React.FC<{ scene: CardScene; durationInFrames: number }>
   const frame = useCurrentFrame();
   const height = LAYOUT.panelBottom - LAYOUT.panelTop;
   // Card text is sized to fit between the news screen and TikTok's caption.
-  const fit = useFitScale(height - 40, 0.55, 1);
+  const fit = useFitScale(height - 40, 0.55, 1.35);
   const px = (n: number) => `calc(${n}px * var(--fit))`;
   return (
     <PanelArea durationInFrames={durationInFrames}>
@@ -425,6 +425,52 @@ export const CardPanel: React.FC<{ scene: CardScene; durationInFrames: number }>
               <RichText text={line.text} highlightStart={itemStart(line.at, 10 + i * 14) + 10} />
             </div>
           ))}
+          {scene.keywords ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: px(14) }}>
+              {scene.keywordsTitle ? (
+                <div
+                  style={{
+                    ...fadeUp(frame, itemStart(scene.keywords[0]?.at, 20) - 6, 14),
+                    padding: `${px(6)} ${px(18)}`,
+                    background: COLORS.gold,
+                    color: COLORS.navyDeep,
+                    fontFamily: FONT_DISPLAY,
+                    fontWeight: 800,
+                    fontSize: px(26),
+                    letterSpacing: 2,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {scene.keywordsTitle}
+                </div>
+              ) : null}
+              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: px(12) }}>
+                {scene.keywords.map((k, i) => {
+                  const start = itemStart(k.at, 20 + i * 8);
+                  const pop = progress(frame, start, 12);
+                  return (
+                    <div
+                      key={k.word}
+                      style={{
+                        padding: `${px(8)} ${px(16)}`,
+                        borderRadius: 14,
+                        background: "rgba(8,22,39,0.7)",
+                        border: `2px solid ${COLORS.gold}`,
+                        opacity: pop,
+                        transform: `scale(${0.7 + 0.3 * pop})`,
+                        textAlign: "center",
+                      }}
+                    >
+                      <div style={{ fontFamily: FONT_BODY, fontWeight: 800, fontSize: px(30), color: COLORS.white }}>{k.word}</div>
+                      {k.meaning ? (
+                        <div style={{ fontFamily: FONT_BODY, fontSize: px(24), color: COLORS.vocab }}>{k.meaning}</div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </PanelArea>

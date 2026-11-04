@@ -194,6 +194,9 @@ export type CardScene = SceneBase & {
   type: "card";
   /** `soft`: Vietnamese-style secondary text (regular weight, muted). */
   lines: { text: string; size?: "lg" | "md" | "sm"; accent?: boolean; soft?: boolean; at?: number }[];
+  /** Optional word chips under the lines, e.g. a preview or recap of the episode's vocabulary. */
+  keywordsTitle?: string;
+  keywords?: { word: string; meaning?: string; at?: number }[];
 };
 
 /**
