@@ -23,7 +23,35 @@ export type VocabItem = {
 /** What the news screen (top video area) shows under the lower third. */
 export type ScreenVisual =
   | { type: "stats"; stats: Stat[] }
-  | { type: "points"; label: string; points: string[]; /** Shown instead of the numbers. */ icons?: IconName[] }
+  | {
+      type: "points";
+      label: string;
+      points: string[];
+      /** Shown instead of the numbers. */
+      icons?: IconName[];
+      /** Seconds into the scene when each point appears. */
+      pointsAt?: number[];
+    }
+  | ({ type: "triangle" } & TriangleSpec)
+  | {
+      /** Cause and effect, top to bottom: each step gets a rising or falling badge. */
+      type: "chain";
+      kicker: string;
+      title: string;
+      items: { label: string; direction: "up" | "down"; at?: number }[];
+    }
+  | {
+      /** Purchasing power: the same money buys fewer goods once prices rise at `at`. */
+      type: "basket";
+      kicker: string;
+      title: string;
+      money: string;
+      items: IconName[];
+      lose: number;
+      before: string;
+      after: string;
+      at?: number;
+    }
   | { type: "title"; kicker: string; title: string; subtitle?: string; direction?: "up" | "down" }
   | {
       type: "chips";
@@ -120,6 +148,13 @@ export type PhoneSpec = {
   toast?: { text: string; at?: number };
 };
 
+/** Three linked ideas drawn as a triangle; each corner lights up at its time. */
+export type TriangleSpec = {
+  title?: string;
+  nodes: [TriangleNode, TriangleNode, TriangleNode];
+};
+export type TriangleNode = { label: string; icon: IconName; at?: number };
+
 export type BoardRow = {
   label: string;
   note?: string;
@@ -197,6 +232,20 @@ export type CardScene = SceneBase & {
   /** Optional word chips under the lines, e.g. a preview or recap of the episode's vocabulary. */
   keywordsTitle?: string;
   keywords?: { word: string; meaning?: string; at?: number }[];
+  /** Optional triangle diagram under the lines. */
+  triangle?: TriangleSpec;
+};
+
+/**
+ * A full-screen branded opener or closer: the channel emblem, name and slogan, with no
+ * news screen or text panel. `slogan` appears at `sloganAt` seconds.
+ */
+export type BrandScene = {
+  type: "brand";
+  seconds: number;
+  kicker: string;
+  sloganAt?: number;
+  voice?: { from: number; to: number; at?: number };
 };
 
 /**
@@ -216,7 +265,10 @@ export type QuizScene = Omit<SceneBase, "visual"> & {
   revealAt?: number;
 };
 
-export type Scene = NewsScene | VerbListScene | PatternScene | CardScene | QuizScene;
+/** Scenes drawn as a news screen above a text panel. */
+export type ScreenScene = NewsScene | VerbListScene | PatternScene | CardScene | QuizScene;
+
+export type Scene = ScreenScene | BrandScene;
 
 export type Episode = {
   channel: string;

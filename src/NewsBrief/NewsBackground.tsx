@@ -3,7 +3,7 @@ import { AbsoluteFill, staticFile, useCurrentFrame, Video } from "remotion";
 import { COLORS } from "../theme";
 
 /** Rotating wireframe globe drawn with ellipses. */
-const Globe: React.FC<{ size: number }> = ({ size }) => {
+export const Globe: React.FC<{ size: number }> = ({ size }) => {
   const frame = useCurrentFrame();
   const r = size / 2;
   const meridians = 8;

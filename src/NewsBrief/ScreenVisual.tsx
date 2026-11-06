@@ -10,7 +10,10 @@ import {
   CrosscheckVisual,
   DashboardVisual,
   FormVisual,
+  BasketVisual,
+  ChainVisual,
   OwnershipVisual,
+  TriangleDiagram,
   VersusVisual,
 } from "./Mockups";
 import { ART_SIZE } from "./SceneArt";
@@ -40,10 +43,11 @@ const Chip: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </div>
 );
 
-const Points: React.FC<{ label: string; points: string[]; icons?: IconName[]; from: number }> = ({
+const Points: React.FC<{ label: string; points: string[]; icons?: IconName[]; pointsAt?: number[]; from: number }> = ({
   label,
   points,
   icons,
+  pointsAt,
   from,
 }) => {
   const frame = useCurrentFrame();
@@ -54,7 +58,7 @@ const Points: React.FC<{ label: string; points: string[]; icons?: IconName[]; fr
       </div>
       <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 16 }}>
         {points.map((point, i) => {
-          const start = from + 10 + i * 14;
+          const start = pointsAt?.[i] !== undefined ? Math.round(pointsAt[i] * VIDEO.fps) : from + 10 + i * 14;
           const p = progress(frame, start, 16);
           const Icon = icons?.[i] ? ICONS[icons[i]] : null;
           return (
@@ -483,7 +487,9 @@ export const ScreenVisualView: React.FC<{
   narrow: boolean;
 }> = ({ visual, from, durationInFrames, narrow }) => {
   if (visual.type === "points") {
-    return <Points label={visual.label} points={visual.points} icons={visual.icons} from={from} />;
+    return (
+      <Points label={visual.label} points={visual.points} icons={visual.icons} pointsAt={visual.pointsAt} from={from} />
+    );
   }
   if (visual.type === "chips") {
     return <Chips {...visual} from={from} narrow={narrow} />;
@@ -511,6 +517,26 @@ export const ScreenVisualView: React.FC<{
   }
   if (visual.type === "ownership") {
     return <OwnershipVisual {...visual} from={from} />;
+  }
+  if (visual.type === "chain") {
+    return <ChainVisual {...visual} from={from} />;
+  }
+  if (visual.type === "basket") {
+    return <BasketVisual {...visual} from={from} />;
+  }
+  if (visual.type === "triangle") {
+    return (
+      <div style={{ position: "absolute", left: 60, right: 60, top: 96 }}>
+        {visual.title ? (
+          <div style={{ marginBottom: 6 }}>
+            <Chip>{visual.title}</Chip>
+          </div>
+        ) : null}
+        <div style={{ display: "flex", justifyContent: "center", transform: "scale(0.62)", transformOrigin: "top center" }}>
+          <TriangleDiagram spec={visual} from={from} width={760} height={470} />
+        </div>
+      </div>
+    );
   }
   if (visual.type === "numbers") {
     const starts = scheduleItems(visual.items, from, durationInFrames);

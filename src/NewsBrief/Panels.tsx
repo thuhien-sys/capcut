@@ -4,6 +4,7 @@ import { FONT_BODY, FONT_DISPLAY, FONT_IPA } from "../fonts";
 import { COLORS, LAYOUT, SAFE, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
 import { RichText } from "./RichText";
+import { TriangleDiagram } from "./Mockups";
 import { useFitScale } from "./useFitScale";
 import { QuizText, quizFrames } from "./Quiz";
 import { CardScene, NewsScene, PatternScene, QuizScene, VerbListScene, VocabItem } from "./types";
@@ -425,6 +426,13 @@ export const CardPanel: React.FC<{ scene: CardScene; durationInFrames: number }>
               <RichText text={line.text} highlightStart={itemStart(line.at, 10 + i * 14) + 10} />
             </div>
           ))}
+          {scene.triangle ? (
+            <div style={{ width: px(640), height: px(500), position: "relative" }}>
+              <div style={{ transform: "scale(var(--fit))", transformOrigin: "top left", position: "absolute", left: 0, top: 0 }}>
+                <TriangleDiagram spec={scene.triangle} from={0} width={640} height={500} />
+              </div>
+            </div>
+          ) : null}
           {scene.keywords ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: px(14) }}>
               {scene.keywordsTitle ? (

@@ -1,11 +1,11 @@
-import { Check, CheckCheck, FileText, Landmark, Search, User, Users } from "lucide-react";
+import { Banknote, Check, CheckCheck, FileText, Landmark, Search, User, Users } from "lucide-react";
 import React from "react";
 import { Easing, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONT_BODY, FONT_DISPLAY } from "../fonts";
 import { COLORS, VIDEO } from "../theme";
 import { fadeUp, progress } from "./anim";
-import { ICONS } from "./Icons";
-import { BoardRow, PhoneSpec, VersusSide } from "./types";
+import { ICONS, IconName } from "./Icons";
+import { BoardRow, PhoneSpec, TriangleSpec, VersusSide } from "./types";
 
 const atFrame = (at: number | undefined, fallback: number) =>
   at !== undefined ? Math.round(at * VIDEO.fps) : fallback;
@@ -1336,6 +1336,326 @@ export const OrgChartArt: React.FC<{
           </div>
         );
       })}
+    </div>
+  );
+};
+
+/** Three linked ideas on a triangle: corners light up in turn, joined by two-way arrows. */
+export const TriangleDiagram: React.FC<{ spec: TriangleSpec; from: number; width: number; height: number }> = ({
+  spec,
+  from,
+  width,
+  height,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const NODE = 136;
+  // Bottom corners sit far enough in for their labels to stay inside the diagram.
+  const inset = Math.max(NODE / 2 + 20, width * 0.2);
+  const pts = [
+    { x: width / 2, y: NODE / 2 + 6 },
+    { x: inset, y: height - NODE / 2 - 40 },
+    { x: width - inset, y: height - NODE / 2 - 40 },
+  ];
+  const starts = spec.nodes.map((n, i) => atFrame(n.at, from + 10 + i * 14));
+  const edges: [number, number][] = [
+    [0, 1],
+    [1, 2],
+    [2, 0],
+  ];
+  const allLit = Math.max(...starts);
+  const spin = frame >= allLit ? (frame - allLit) / 40 : 0;
+
+  return (
+    <div style={{ position: "relative", width, height }}>
+      <svg width={width} height={height} style={{ position: "absolute", inset: 0, overflow: "visible" }}>
+        {edges.map(([a, b]) => {
+          const p = progress(frame, Math.max(starts[a], starts[b]), 16);
+          const A = pts[a];
+          const B = pts[b];
+          // Pulses travel both ways once every corner is lit.
+          const t1 = (spin + a * 0.33) % 1;
+          const t2 = 1 - ((spin + b * 0.33) % 1);
+          return (
+            <g key={`${a}-${b}`}>
+              <line x1={A.x} y1={A.y} x2={B.x} y2={B.y} stroke="rgba(255,255,255,0.15)" strokeWidth={6} />
+              <line
+                x1={A.x}
+                y1={A.y}
+                x2={A.x + (B.x - A.x) * p}
+                y2={A.y + (B.y - A.y) * p}
+                stroke={COLORS.gold}
+                strokeWidth={6}
+                strokeLinecap="round"
+              />
+              {frame >= allLit ? (
+                <>
+                  <circle cx={A.x + (B.x - A.x) * t1} cy={A.y + (B.y - A.y) * t1} r={8} fill={COLORS.white} />
+                  <circle cx={A.x + (B.x - A.x) * t2} cy={A.y + (B.y - A.y) * t2} r={8} fill={COLORS.red} />
+                </>
+              ) : null}
+            </g>
+          );
+        })}
+      </svg>
+      {spec.nodes.map((node, i) => {
+        const lit = frame >= starts[i];
+        const pop = lit ? spring({ frame: frame - starts[i], fps, config: { damping: 10 } }) : 0;
+        const Icon = ICONS[node.icon];
+        return (
+          <div
+            key={node.label}
+            style={{
+              position: "absolute",
+              left: pts[i].x - NODE / 2,
+              top: pts[i].y - NODE / 2,
+              width: NODE,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <div
+              style={{
+                width: NODE,
+                height: NODE,
+                borderRadius: "50%",
+                background: lit ? `radial-gradient(circle at 35% 30%, #2c6db3, ${COLORS.navyDark})` : "rgba(255,255,255,0.08)",
+                border: `7px solid ${lit ? COLORS.gold : "rgba(255,255,255,0.25)"}`,
+                boxShadow: lit ? "0 0 40px rgba(245,196,0,0.45)" : undefined,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transform: `scale(${0.85 + 0.15 * pop})`,
+              }}
+            >
+              <Icon size={70} color={lit ? "#fff" : "rgba(255,255,255,0.4)"} strokeWidth={1.8} />
+            </div>
+            <div
+              style={{
+                marginTop: 10,
+                padding: "6px 16px",
+                borderRadius: 12,
+                background: lit ? COLORS.gold : "rgba(255,255,255,0.12)",
+                color: lit ? COLORS.navyDeep : "rgba(255,255,255,0.6)",
+                fontFamily: FONT_DISPLAY,
+                fontWeight: 900,
+                fontSize: 30,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {node.label}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+/** Cause and effect, top to bottom, each step with a rising or falling badge. */
+export const ChainVisual: React.FC<{
+  kicker: string;
+  title: string;
+  items: { label: string; direction: "up" | "down"; at?: number }[];
+  from: number;
+}> = ({ kicker, title, items, from }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  return (
+    <div style={{ position: "absolute", left: 60, right: 60, top: 96 }}>
+      <div style={{ ...fadeUp(frame, from, 14), display: "flex", alignItems: "center", gap: 18 }}>
+        <Kicker>{kicker}</Kicker>
+        <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 900, fontSize: 40, color: COLORS.white, whiteSpace: "nowrap" }}>
+          {title}
+        </div>
+      </div>
+      <div style={{ marginTop: 12, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        {items.map((item, i) => {
+          const start = atFrame(item.at, from + 16 + i * 18);
+          const shown = frame >= start;
+          const pop = shown ? spring({ frame: frame - start, fps, config: { damping: 11 } }) : 0;
+          const up = item.direction === "up";
+          return (
+            <React.Fragment key={item.label}>
+              {i > 0 ? (
+                <div style={{ height: 14, width: 4, background: shown ? COLORS.gold : "rgba(255,255,255,0.2)" }} />
+              ) : null}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 16,
+                  width: 760,
+                  height: 48,
+                  padding: "0 10px 0 22px",
+                  borderRadius: 24,
+                  background: shown ? "rgba(5,14,26,0.9)" : "rgba(5,14,26,0.45)",
+                  border: `2px solid ${shown ? (up ? COLORS.gold : "#5ab0ff") : "rgba(255,255,255,0.15)"}`,
+                  opacity: shown ? 1 : 0.35,
+                  transform: `scale(${0.92 + 0.08 * pop})`,
+                }}
+              >
+                <div
+                  style={{
+                    flex: 1,
+                    fontFamily: FONT_DISPLAY,
+                    fontWeight: 800,
+                    fontSize: 25,
+                    color: COLORS.white,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {item.label}
+                </div>
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: up ? COLORS.gold : "#5ab0ff",
+                    color: COLORS.navyDeep,
+                    fontSize: 20,
+                    fontWeight: 900,
+                    transform: `scale(${pop}) translateY(${(1 - pop) * (up ? 10 : -10)}px)`,
+                  }}
+                >
+                  {up ? "▲" : "▼"}
+                </div>
+              </div>
+            </React.Fragment>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+/** Purchasing power: the same money buys fewer goods once prices rise. */
+export const BasketVisual: React.FC<{
+  kicker: string;
+  title: string;
+  money: string;
+  items: IconName[];
+  lose: number;
+  before: string;
+  after: string;
+  at?: number;
+  from: number;
+}> = ({ kicker, title, money, items, lose, before, after, at, from }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const rise = atFrame(at, from + 60);
+  const risen = frame >= rise;
+  const tag = risen ? spring({ frame: frame - rise, fps, config: { damping: 9 } }) : 0;
+  return (
+    <div style={{ position: "absolute", left: 60, right: 60, top: 96 }}>
+      <div style={{ ...fadeUp(frame, from, 14), display: "flex", alignItems: "center", gap: 18 }}>
+        <Kicker>{kicker}</Kicker>
+        <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 900, fontSize: 40, color: COLORS.white, whiteSpace: "nowrap" }}>
+          {title}
+        </div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 26, marginTop: 22 }}>
+        <div
+          style={{
+            ...fadeUp(frame, from + 6, 14),
+            width: 250,
+            padding: "18px 16px",
+            borderRadius: 18,
+            background: "linear-gradient(135deg, #1f8f5a, #0d4f33)",
+            border: "2px solid rgba(255,255,255,0.3)",
+            textAlign: "center",
+            fontFamily: FONT_DISPLAY,
+            color: "#fff",
+          }}
+        >
+          <Banknote size={52} color="#fff" strokeWidth={1.8} />
+          <div style={{ fontWeight: 900, fontSize: 32, marginTop: 4 }}>{money}</div>
+          <div style={{ fontWeight: 700, fontSize: 18, opacity: 0.85 }}>same money</div>
+        </div>
+        <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 900, fontSize: 44, color: COLORS.gold }}>→</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", gap: 12 }}>
+            {items.map((name, i) => {
+              const Icon = ICONS[name];
+              const lost = risen && i >= items.length - lose;
+              const pop = progress(frame, from + 12 + i * 5, 12);
+              const gone = lost ? progress(frame, rise + 8 + (i - (items.length - lose)) * 6, 12) : 0;
+              return (
+                <div
+                  key={`${name}-${i}`}
+                  style={{
+                    position: "relative",
+                    width: 92,
+                    height: 92,
+                    borderRadius: 20,
+                    background: "rgba(255,255,255,0.12)",
+                    border: "2px solid rgba(255,255,255,0.25)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    opacity: pop * (1 - 0.65 * gone),
+                    transform: `scale(${pop * (1 - 0.15 * gone)})`,
+                  }}
+                >
+                  <Icon size={50} color="#fff" strokeWidth={1.8} />
+                  {lost ? (
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 80,
+                        fontWeight: 900,
+                        color: COLORS.red,
+                        opacity: gone,
+                      }}
+                    >
+                      ✕
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+          <div
+            style={{
+              marginTop: 16,
+              fontFamily: FONT_DISPLAY,
+              fontWeight: 800,
+              fontSize: 28,
+              color: risen ? COLORS.down : COLORS.white,
+            }}
+          >
+            {risen ? after : before}
+          </div>
+        </div>
+      </div>
+      {risen ? (
+        <div
+          style={{
+            position: "absolute",
+            right: 10,
+            top: 0,
+            padding: "8px 18px",
+            borderRadius: 12,
+            background: COLORS.red,
+            color: "#fff",
+            fontFamily: FONT_DISPLAY,
+            fontWeight: 900,
+            fontSize: 30,
+            transform: `rotate(6deg) scale(${tag})`,
+          }}
+        >
+          PRICES ▲
+        </div>
+      ) : null}
     </div>
   );
 };

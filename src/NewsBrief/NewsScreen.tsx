@@ -7,7 +7,7 @@ import { NewsBackground } from "./NewsBackground";
 import { QuizVisual } from "./Quiz";
 import { SceneArtView } from "./SceneArt";
 import { ScreenVisualView } from "./ScreenVisual";
-import { Episode, Scene } from "./types";
+import { Episode, ScreenScene } from "./types";
 
 export const TICKER_HEIGHT = 64;
 export const OPENER_FRAMES = { breaking: 70, wipe: 16 } as const;
@@ -289,7 +289,7 @@ export const Ticker: React.FC<{ source: string; date: string; items: string[]; t
 };
 
 /** Per-scene overlays on the news screen. */
-export const NewsScreen: React.FC<{ episode: Episode; scene: Scene; durationInFrames: number }> = ({
+export const NewsScreen: React.FC<{ episode: Episode; scene: ScreenScene; durationInFrames: number }> = ({
   episode,
   scene,
   durationInFrames,
